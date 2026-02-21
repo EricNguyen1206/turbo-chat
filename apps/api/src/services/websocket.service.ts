@@ -386,6 +386,18 @@ export class WebSocketService {
         messageId: savedMessage.id,
         recipientCount: participants.length
       });
+
+      // Handle AI response if applicable
+      const conversation = await this.conversationService.findById(conversationId);
+      if (conversation && (conversation as any).isAiAgent) {
+        const { User } = await import('@/models/User');
+        let aiUser = await User.findOne({ email: 'bot@openclaw.local' });
+        if (!aiUser || senderId !== aiUser.id) {
+          this.generateAndSendAiResponse(conversation).catch((err) => {
+            logger.error('Failed to generate AI response:', err);
+          });
+        }
+      }
     } catch (error) {
       logger.error('Handle message error:', error);
       throw error;
@@ -445,6 +457,43 @@ export class WebSocketService {
     } catch (error) {
       logger.error('Handle leave conversation error:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Generates and sends an AI response asynchronously.
+   */
+  private async generateAndSendAiResponse(
+    conversation: any
+  ): Promise<void> {
+    try {
+      const history = await this.messageService.getConversationMessages(conversation.id, 20);
+      const systemPrompt = conversation.systemPrompt || "You are a helpful AI assistant.";
+      const model = conversation.aiModel || "gpt-4o-mini";
+
+      const { llmService } = await import('./llm.service');
+      const aiResponseText = await llmService.generateResponse(systemPrompt, history, model);
+
+      const { User } = await import('@/models/User');
+      let aiUser = await User.findOne({ email: 'bot@openclaw.local' });
+      if (!aiUser) {
+        aiUser = await User.create({
+          username: 'ZeroClaw',
+          email: 'bot@openclaw.local',
+          avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=ZeroClaw',
+        });
+      }
+
+      await this.handleSendMessage(
+        aiUser.id,
+        aiUser.username,
+        conversation.id,
+        aiResponseText,
+        null,
+        null
+      );
+    } catch (err) {
+      logger.error('Error in generateAndSendAiResponse:', err);
     }
   }
 }
