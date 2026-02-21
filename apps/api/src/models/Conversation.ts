@@ -11,6 +11,12 @@ export interface IConversation extends Document {
   updatedAt: Date;
   deletedAt?: Date | null;
   id: string;
+  isAiAgent: boolean;
+  systemPrompt?: string;
+  aiModel?: string;
+  aiProfileId?: mongoose.Types.ObjectId;
+  totalTokensUsed?: number;
+  maxContextWindow?: number;
 }
 
 const ConversationSchema: Schema<IConversation> = new Schema(
@@ -24,6 +30,12 @@ const ConversationSchema: Schema<IConversation> = new Schema(
       default: ConversationType.GROUP,
     },
     deletedAt: { type: Date, default: null },
+    isAiAgent: { type: Boolean, default: true },
+    systemPrompt: { type: String, default: "You are a helpful AI assistant." },
+    aiModel: { type: String, default: "gpt-4o-mini" },
+    aiProfileId: { type: Schema.Types.ObjectId, ref: "AIProfile" },
+    totalTokensUsed: { type: Number, default: 0 },
+    maxContextWindow: { type: Number, default: 8000 },
   },
   {
     timestamps: true,
