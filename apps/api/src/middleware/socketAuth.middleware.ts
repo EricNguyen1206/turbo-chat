@@ -1,9 +1,9 @@
 import { config } from '@/config/config';
-import { User } from '@/models/User';
 import { logger } from '@/utils/logger';
 import jwt from 'jsonwebtoken';
 import { Socket } from 'socket.io';
 import { NextFunction } from 'express';
+import { prisma } from '@/lib/prisma';
 
 export interface AuthenticatedSocket extends Socket {
   userId?: string;
@@ -36,8 +36,13 @@ export const socketAuthMiddleware = async (socket: AuthenticatedSocket, next: Ne
       return next(new Error('Invalid token'));
     }
 
-    // Validate user exists in database using Mongoose
-    const user = await User.findOne({ _id: decoded.userId, deletedAt: null });
+    // Validate user exists in database using Prisma
+    const user = await prisma.user.findFirst({
+      where: {
+        id: decoded.userId,
+        deletedAt: null,
+      },
+    });
 
     if (!user) {
       logger.warn('Socket connection rejected: User not found', {

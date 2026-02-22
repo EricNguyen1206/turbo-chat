@@ -1,11 +1,12 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { config } from "@/config/config";
-import { User, IUser } from "@/models/User";
 import { logger } from "@/utils/logger";
+import { prisma } from "@/lib/prisma";
+import { User } from "@prisma/client";
 
 export interface AuthenticatedRequest extends Request {
-  user?: IUser;
+  user?: User;
   userId?: string;
 }
 
@@ -36,8 +37,13 @@ export const authenticateToken = async (
     // Verify JWT token
     const decoded = jwt.verify(token, config.jwt.secret) as any;
 
-    // Get user from database using Mongoose
-    const user = await User.findOne({ _id: decoded.userId, deletedAt: null });
+    // Get user from database using Prisma
+    const user = await prisma.user.findFirst({
+      where: {
+        id: decoded.userId,
+        deletedAt: null,
+      },
+    });
 
     if (!user) {
       res.status(401).json({
