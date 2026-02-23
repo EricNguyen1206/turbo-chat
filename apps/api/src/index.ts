@@ -22,6 +22,9 @@ import { setupSwagger } from '@/config/swagger';
 import { WebSocketController } from '@/controllers/websocket.controller';
 import { logger } from '@/utils/logger';
 import { socketAuthMiddleware } from './middleware/socketAuth.middleware';
+import { createProxyMiddleware } from 'http-proxy-middleware';
+
+const ZEROCLAW_URL = process.env['ZEROCLAW_URL'] || 'http://127.0.0.1:42617';
 
 class App {
   public app: express.Application;
@@ -74,6 +77,18 @@ class App {
     // Body parsing middleware
     this.app.use(express.json({ limit: '10mb' }));
     this.app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+    // AI WebSocket Proxy to ZeroClaw
+    // We mount this before the standard routes so it intercepts the WebSocket upgrade
+    this.app.use(
+      '/api/v1/ai/ws',
+      createProxyMiddleware({
+        target: ZEROCLAW_URL,
+        changeOrigin: true,
+        ws: true,
+        logger: logger as any,
+      })
+    );
 
     this.app.get('/', (_req, res) => {
       res.status(200).json({

@@ -1,10 +1,11 @@
-import { Paperclip, Send, Smile } from "lucide-react";
+import { Paperclip, Send, Mic, Square } from "lucide-react";
 import { useRef, useState } from "react";
 import { Button } from "../ui/button";
 import { useUpload } from "@/hooks/useUpload";
 import { toast } from "react-toastify";
 import { useKeyboardHeight } from "@/hooks/useKeyboardHeight";
 import { cn } from "@/lib/utils";
+import { useVoiceRecorder } from "@/hooks/useVoiceRecorder";
 
 interface MessageInputProps {
   onSendMessage: (message: string, url?: string, fileName?: string) => void;
@@ -21,6 +22,18 @@ export default function MessageInput({
   const { uploadFile, isUploading } = useUpload();
   const keyboardHeight = useKeyboardHeight();
   const [message, setMessage] = useState("");
+  const { isRecording, isTranscribing, startRecording, stopRecordingAndTranscribe } = useVoiceRecorder();
+
+  const handleVoiceToggle = async () => {
+    if (isRecording) {
+      const text = await stopRecordingAndTranscribe();
+      if (text) {
+        setMessage(prev => (prev ? prev + ' ' + text : text));
+      }
+    } else {
+      startRecording();
+    }
+  };
 
   const handleSend = () => {
     if (message.trim() && isConnected && !disabled) {
@@ -139,9 +152,11 @@ export default function MessageInput({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-11 w-11 shrink-0 rounded-lg hover:bg-accent/5 transition-all duration-200 cursor-not-allowed opacity-40"
+                  onClick={handleVoiceToggle}
+                  disabled={disabled || !isConnected || isUploading || isTranscribing}
+                  className={`h-11 w-11 shrink-0 rounded-lg hover:bg-accent/5 transition-all duration-200 ${isRecording ? 'text-red-500 animate-pulse' : ''}`}
                 >
-                  <Smile className="w-5 h-5" />
+                  {isRecording ? <Square className="w-5 h-5 fill-current" /> : <Mic className="w-5 h-5" />}
                 </Button>
               </div>
             </div>

@@ -1,29 +1,31 @@
 import { Message, useChatStore } from "@/store/useChatStore";
-import { MessageDto } from "@raven/types";
 import { useMarkConversationAsReadMutation } from "@/services/api/conversations";
 import { useEffect } from "react";
 
-// Hook for handling incoming WebSocket messages
+// Hook for handling incoming WebSocket messages from ZeroClaw
 export const useWebSocketMessageHandler = (conversationId: string | undefined) => {
   const { upsertMessageToConversation } = useChatStore();
   const { mutate: markAsRead } = useMarkConversationAsReadMutation();
 
   useEffect(() => {
-    const handleChatMessage = (event: CustomEvent<MessageDto>) => {
-      const chatMessage = event.detail;
+    const handleAIChatMessage = (event: CustomEvent<any>) => {
+      const data = event.detail;
 
-      // Only process messages for the current conversation
-      if (conversationId && String(chatMessage.conversationId) === String(conversationId)) {
+      // Parse the incoming AI message. ZeroClaw might send raw text or JSON.
+      // We assume it sends an object with text/content and maybe conversationId for now.
+      // If it's a direct connection to a specific session in ZeroClaw, we use the current UI conversationId.
+
+      const messageText = data.content || data.text || typeof data === 'string' ? data : "Received empty response";
+
+      if (conversationId) {
         const message: Message = {
-          id: String(chatMessage.id),
-          conversationId: String(chatMessage.conversationId),
-          senderId: String(chatMessage.senderId),
-          ...(chatMessage.text !== undefined && { text: chatMessage.text }),
-          createdAt: chatMessage.createdAt,
-          ...(chatMessage.url !== undefined && { url: chatMessage.url }),
-          ...(chatMessage.fileName !== undefined && { fileName: chatMessage.fileName }),
-          ...(chatMessage.senderName !== undefined && { senderName: chatMessage.senderName }),
-          ...(chatMessage.senderAvatar !== undefined && { senderAvatar: chatMessage.senderAvatar }),
+          id: `ai-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          conversationId: String(conversationId),
+          senderId: "system-ai", // Represents the AI
+          text: messageText,
+          createdAt: new Date().toISOString(),
+          senderName: "ZeroClaw AI",
+          senderAvatar: "https://api.dicebear.com/7.x/bottts/svg?seed=zeroclaw",
         };
 
         // Add message to chat store
@@ -34,11 +36,11 @@ export const useWebSocketMessageHandler = (conversationId: string | undefined) =
       }
     };
 
-    // Listen for chat messages from WebSocket
-    window.addEventListener("chat-message", handleChatMessage as EventListener);
+    // Listen for chat messages from ZeroClaw WebSocket
+    window.addEventListener("ai-chat-message", handleAIChatMessage as EventListener);
 
     return () => {
-      window.removeEventListener("chat-message", handleChatMessage as EventListener);
+      window.removeEventListener("ai-chat-message", handleAIChatMessage as EventListener);
     };
   }, [conversationId, upsertMessageToConversation, markAsRead]);
 };

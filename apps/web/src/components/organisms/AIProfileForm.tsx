@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 export const AIProfileForm = ({ onSubmit }: { onSubmit: (data: any) => void }) => {
   const [apiKey, setApiKey] = useState('');

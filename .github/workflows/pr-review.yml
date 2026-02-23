@@ -34,6 +34,11 @@ jobs:
           echo "Retrieved PR diff for PR #${{ github.event.pull_request.number }}"
           echo "Diff size: $(wc -c < pr_diff.txt) bytes"
 
+      - name: Wait for API warm-up
+        run: |
+          echo "Waiting 30 seconds to avoid API cold start issues..."
+          sleep 30
+
       - name: Review code with AI
         env:
           OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}

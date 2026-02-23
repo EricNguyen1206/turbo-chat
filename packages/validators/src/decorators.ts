@@ -6,7 +6,7 @@ export function IsMongoDbId(validationOptions?: ValidationOptions): PropertyDeco
       name: 'isMongoDbId',
       target: object.constructor,
       propertyName: propertyName as string,
-      options: validationOptions,
+      options: validationOptions as ValidationOptions,
       validator: {
         validate(id: string): boolean {
           if (!id || typeof id !== 'string') return false;

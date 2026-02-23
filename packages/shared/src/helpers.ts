@@ -1,6 +1,6 @@
 export const censorPassword = (password: string) => {
   if (!password) return password;
-  
+
   const censorLength = Math.floor(password.length * 0.7);
   const start = Math.floor(
     Math.random() * (password.length - censorLength + 1)
@@ -11,7 +11,7 @@ export const censorPassword = (password: string) => {
     "*".repeat(censorLength) +
     password.substring(end)
   );
-  
+
 };
 
 export const getSummaryName = (name: string) => {
@@ -20,7 +20,9 @@ export const getSummaryName = (name: string) => {
   if (isSpaceName !== undefined) {
     const arr = name.split(" ");
     const lastName = arr[arr.length - 1];
-    return lastName.charAt(0);
+    if (lastName) {
+      return lastName.charAt(0);
+    }
   }
 
   return name.charAt(0); // Kyle => K

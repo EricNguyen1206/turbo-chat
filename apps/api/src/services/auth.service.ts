@@ -188,7 +188,7 @@ export class AuthService {
   }
 
   // Google Auth Methods
-  public async verifyGoogleToken(token: string): Promise<any> {
+  public async verifyGoogleToken(token: string): Promise<import('google-auth-library').TokenPayload> {
     try {
       const client = new OAuth2Client(googleConfig.clientId);
       const ticket = await client.verifyIdToken({
@@ -223,16 +223,16 @@ export class AuthService {
         let username = payload.name || payload.email.split('@')[0];
 
         // Ensure username uniqueness
-        const existingUsername = await prisma.user.findFirst({ where: { username } });
+        const existingUsername = await prisma.user.findFirst({ where: { username: username as string } });
         if (existingUsername) {
           username = `${username}${Math.floor(1000 + Math.random() * 9000)}`;
         }
 
         user = await prisma.user.create({
           data: {
-            username,
+            username: username as string,
             email: payload.email,
-            avatar: payload.picture,
+            avatar: (payload.picture ?? null) as string | null,
             // No password for Google users
           }
         });

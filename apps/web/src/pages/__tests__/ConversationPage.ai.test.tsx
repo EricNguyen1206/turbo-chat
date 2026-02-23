@@ -1,7 +1,6 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { vi } from 'vitest';
-import { ConversationPage } from '../ConversationPage';
+import ConversationPage from '../ConversationPage';
 
 // Mock matchMedia to bypass jsdom error for Radix UI or hooks
 Object.defineProperty(window, 'matchMedia', {

@@ -16,8 +16,6 @@ router.post(
   messageController.createMessage.bind(messageController)
 );
 
-// Get friend messages
-router.get('/friend/:friendId', messageController.getFriendMessages.bind(messageController));
 
 // Get message by ID
 router.get('/:id', messageController.getMessageById.bind(messageController));

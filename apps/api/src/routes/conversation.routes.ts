@@ -4,7 +4,6 @@ import { validateDto } from '@/middleware/validation.middleware';
 import {
   CreateConversationRequestDto,
   UpdateConversationRequestDto,
-  ConversationMembershipRequest,
 } from '@raven/validators';
 
 const router = Router();
@@ -25,22 +24,7 @@ router.put('/:id', validateDto(UpdateConversationRequestDto), conversationContro
 // DELETE /api/v1/conversations/:id
 router.delete('/:id', conversationController.deleteConversation.bind(conversationController));
 
-// POST /api/v1/conversations/:id/user
-router.post(
-  '/:id/user',
-  validateDto(ConversationMembershipRequest),
-  conversationController.addUserToConversation.bind(conversationController)
-);
 
-// PUT /api/v1/conversations/:id/user
-router.put('/:id/user', conversationController.leaveConversation.bind(conversationController));
-
-// DELETE /api/v1/conversations/:id/user
-router.delete(
-  '/:id/user',
-  validateDto(ConversationMembershipRequest),
-  conversationController.removeUserFromConversation.bind(conversationController)
-);
 
 
 // Mark conversation as read

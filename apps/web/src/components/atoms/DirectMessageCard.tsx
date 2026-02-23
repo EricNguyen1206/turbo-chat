@@ -4,7 +4,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Link } from 'react-router-dom';
 import { SidebarMenuItem } from '../ui/sidebar';
 import { cn } from '@/lib/utils';
-import OnlineStatusBadge from './OnlineStatusBadge';
 import { Badge } from '../ui/badge';
 
 type DirectMessageCardProps = {
@@ -15,10 +14,6 @@ type DirectMessageCardProps = {
 const DirectMessageCard = ({ convo, isActive }: DirectMessageCardProps) => {
   const unreadCount = useConversationStore((state) => state.unreadCounts[convo.id] ?? 0);
   const displayName = convo.name.split('@')[0];
-  // For online status, use otherUserId (the friend's ID)
-  // We removed the fallback to ownerId because it caused the badge to show the owner's status (incorrectly)
-  // when otherUserId was missing.
-  const friendUserId = convo.otherUserId;
 
   return (
     <SidebarMenuItem>
@@ -39,8 +34,6 @@ const DirectMessageCard = ({ convo, isActive }: DirectMessageCardProps) => {
                 .join('')}
             </AvatarFallback>
           </Avatar>
-          {/* Online status badge for the friend - only show if we have a valid friend ID */}
-          {friendUserId && <OnlineStatusBadge userId={friendUserId} size="sm" />}
         </div>
 
         <div className="flex-1 min-w-0 flex items-center justify-between">

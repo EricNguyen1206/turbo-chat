@@ -1,5 +1,5 @@
 import { Message } from "@/store/useChatStore";
-import { useSocketStore } from "@/store/useSocketStore";
+import { useZeroClawSocketStore } from "@/store/useZeroClawSocketStore";
 import { useCallback, useEffect } from "react";
 import { toast } from "react-toastify";
 
@@ -11,12 +11,13 @@ export const useMessageSending = (
   scrollToBottom: () => void,
   addMessageToConversation: (conversationId: string, message: Message) => void
 ) => {
-  const { sendMessage, isConnected, error } = useSocketStore();
+  const { sendMessage, isConnected, error } = useZeroClawSocketStore();
 
   // Handle sending messages with optimistic update
   const handleSendMessage = useCallback(
     async (message: string, url?: string, fileName?: string) => {
-      if (sessionUser?.id && (message !== "" || url) && conversationId && isConnected()) {
+      // For ZeroClaw AI, we just send text for now
+      if (sessionUser?.id && message !== "" && conversationId && isConnected()) {
         try {
           // 1. Optimistic update - show message immediately
           const tempId = `temp-${Date.now()}`;
@@ -33,15 +34,15 @@ export const useMessageSending = (
           };
           addMessageToConversation(conversationId, optimisticMessage);
 
-          // 2. Send message via WebSocket (server will broadcast it back)
-          sendMessage(conversationId, message, url, fileName);
+          // 2. Send message via WebSocket (ZeroClaw will process and reply)
+          sendMessage(message);
           setFormData({ message: "" });
           scrollToBottom();
         } catch (error) {
-          toast.error("Failed to send message");
+          toast.error("Failed to send message to AI");
         }
       } else if (!isConnected()) {
-        toast.warn("Not connected to chat server");
+        toast.warn("Not connected to AI server");
       }
     },
     [sessionUser, conversationId, isConnected, sendMessage, setFormData, scrollToBottom, addMessageToConversation]
@@ -50,7 +51,7 @@ export const useMessageSending = (
   // Show error notifications
   useEffect(() => {
     if (error) {
-      toast.error(`WebSocket Error: ${error}`);
+      toast.error(`AI WebSocket Error: ${error}`);
     }
   }, [error]);
 

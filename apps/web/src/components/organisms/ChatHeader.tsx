@@ -22,7 +22,6 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useConversationStore } from "@/store/useConversationStore";
 import { useSocketStore } from "@/store/useSocketStore";
-import { useOnlineStatusStore } from "@/store/useOnlineStatusStore";
 import { toast } from "react-toastify";
 import GroupChatHeader from "../atoms/GroupChatHeaderItem";
 import DirectChatHeader from "../atoms/DirectChatHeaderItem";
@@ -40,7 +39,6 @@ interface ChatHeaderProps {
   avatar: string;
   isGroup: boolean;
   participantCount?: number;
-  isOnline?: boolean;
   members?: Member[];
   ownerId?: string;
   currentUserId?: string;
@@ -64,12 +62,7 @@ export default function ChatHeader(props: ChatHeaderProps) {
 
   const isOwner = currentUserId === ownerId;
 
-  // For 1-1 chats, derive friend's id from members array
-  const friendId = useMemo(() => {
-    if (isGroup || !members.length) return undefined;
-    const friend = members.find((m) => m.id !== currentUserId);
-    return friend?.id;
-  }, [isGroup, members, currentUserId]);
+
 
   // For 1-1 chats, derive friend's email from members array
   const friendEmail = useMemo(() => {
@@ -78,10 +71,7 @@ export default function ChatHeader(props: ChatHeaderProps) {
     return friend?.email;
   }, [isGroup, members, currentUserId]);
 
-  // For 1-1 chats, get friend's online status from store
-  const friendOnlineStatus = useOnlineStatusStore((state) =>
-    friendId ? state.isUserOnline(friendId) : false
-  );
+
 
   const leaveConversationMutation = useLeaveConversationMutation({
     onSuccess: () => {
@@ -162,7 +152,6 @@ export default function ChatHeader(props: ChatHeaderProps) {
                   <DirectChatHeader
                     name={name}
                     email={friendEmail}
-                    isOnline={friendOnlineStatus}
                   />
                 )}
                 <MoreHorizontal className="w-4 h-4 text-muted-foreground/40 ml-2" />

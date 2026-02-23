@@ -371,8 +371,8 @@ export class WebSocketService {
 
       // Handle AI response if applicable
       if ((conversation as any).isAiAgent) {
-        const { User } = await import('@/models/User');
-        let aiUser = await User.findOne({ email: 'bot@openclaw.local' });
+        const { prisma } = await import('@/lib/prisma');
+        const aiUser = await prisma.user.findFirst({ where: { email: 'bot@openclaw.local' } });
         if (!aiUser || senderId !== aiUser.id) {
           this.generateAndSendAiResponse(conversation).catch((err) => {
             logger.error('Failed to generate AI response:', err);

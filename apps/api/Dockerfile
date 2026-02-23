@@ -57,6 +57,7 @@ RUN pnpm build || true
 
 # Build the API
 WORKDIR /app/apps/api
+RUN npx prisma generate
 RUN pnpm build
 
 # ================================================
@@ -69,25 +70,26 @@ WORKDIR /app
 # Set environment variables
 ENV NODE_ENV=production
 
+# Install pnpm for pruning if needed, but we'll try to just copy
+RUN npm install -g pnpm
+
 # Create non-root user for security
 RUN addgroup --system --gid 1001 nodejs && \
   adduser --system --uid 1001 expressjs
 
-# Copy entire workspace structure to preserve node_modules links
-COPY --from=builder --chown=expressjs:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=expressjs:nodejs /app/package.json ./package.json
-COPY --from=builder --chown=expressjs:nodejs /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
+# Copy essential workspace files
+COPY --from=builder /app/package.json /app/pnpm-lock.yaml /app/pnpm-workspace.yaml ./
+COPY --from=builder /app/node_modules ./node_modules
 
-# Copy API app
-COPY --from=builder --chown=expressjs:nodejs /app/apps/api/dist ./apps/api/dist
-COPY --from=builder --chown=expressjs:nodejs /app/apps/api/package.json ./apps/api/package.json
-COPY --from=builder --chown=expressjs:nodejs /app/apps/api/docs ./apps/api/docs
-COPY --from=builder --chown=expressjs:nodejs /app/apps/api/node_modules ./apps/api/node_modules
+# Copy built app and packages
+COPY --from=builder /app/apps/api/dist ./apps/api/dist
+COPY --from=builder /app/apps/api/package.json ./apps/api/package.json
+COPY --from=builder /app/apps/api/prisma ./apps/api/prisma
+COPY --from=builder /app/apps/api/node_modules ./apps/api/node_modules
+COPY --from=builder /app/packages ./packages
 
-# Copy built workspace packages
-COPY --from=builder --chown=expressjs:nodejs /app/packages/shared ./packages/shared
-COPY --from=builder --chown=expressjs:nodejs /app/packages/types ./packages/types
-COPY --from=builder --chown=expressjs:nodejs /app/packages/validators ./packages/validators
+# Fix permissions
+RUN chown -R expressjs:nodejs /app
 
 # Switch to non-root user
 USER expressjs

@@ -16,8 +16,9 @@ export interface ConversationDto {
   createdAt: Date;
   unreadCount?: number;
   lastReadAt?: Date;
+  totalTokensUsed?: number;
+  maxContextWindow?: number;
 }
-
 export interface ConversationDetailDto extends ConversationDto {
   members: UserDto[];
 }

@@ -41,7 +41,6 @@ export enum SocketEvent {
 
   // Presence events
   HEARTBEAT = "heartbeat",
-  FRIEND_STATUS_CHANGED = "friend_status_changed",
 
   // Error events
   ERROR = "error",
@@ -121,12 +120,6 @@ export interface HeartbeatPayload {
   timestamp: number;
 }
 
-export interface FriendStatusChangedPayload {
-  user_id: string;
-  status: 'online' | 'offline';
-  timestamp: number;
-}
-
 // ============================================================================
 // Error Payloads
 // ============================================================================
@@ -147,7 +140,6 @@ export interface ServerToClientEvents {
   [SocketEvent.NEW_MESSAGE]: (payload: MessageDto) => void;
   [SocketEvent.USER_JOINED]: (payload: UserJoinedPayload) => void;
   [SocketEvent.USER_LEFT]: (payload: UserLeftPayload) => void;
-  [SocketEvent.FRIEND_STATUS_CHANGED]: (payload: FriendStatusChangedPayload) => void;
   [SocketEvent.ERROR]: (payload: ErrorPayload) => void;
 }
 

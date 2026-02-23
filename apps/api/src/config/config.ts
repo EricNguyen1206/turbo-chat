@@ -1,7 +1,14 @@
 import dotenv from "dotenv";
+import path from "path";
+import fs from "fs";
 
 // Load environment variables
-dotenv.config();
+const rootEnvPath = path.resolve(__dirname, "../../../../.env");
+if (fs.existsSync(rootEnvPath)) {
+  dotenv.config({ path: rootEnvPath });
+} else {
+  dotenv.config();
+}
 
 export const config = {
   app: {

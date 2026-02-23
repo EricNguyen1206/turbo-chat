@@ -3,74 +3,14 @@ import { UpdateProfileDto } from "@raven/validators";
 import { UserDto } from "@raven/types";
 import { logger } from "@/utils/logger";
 import { prisma } from "@/lib/prisma";
-import { User } from "@prisma/client";
 
 export class UserService {
-  // Private repository methods
-  private async findById(id: string): Promise<User | null> {
-    try {
-      return await prisma.user.findFirst({
-        where: { id, deletedAt: null },
-      });
-    } catch (error) {
-      logger.error("Find user by ID error:", error);
-      throw error;
-    }
-  }
-
-  // @ts-expect-error - Used by public methods, false positive
-  private async findByEmail(email: string): Promise<User | null> {
-    try {
-      return await prisma.user.findFirst({
-        where: { email, deletedAt: null },
-      });
-    } catch (error) {
-      logger.error("Find user by email error:", error);
-      throw error;
-    }
-  }
-
-  // @ts-expect-error - Used by public methods, false positive
-  private async create(userData: Partial<User>): Promise<User> {
-    try {
-      return await prisma.user.create({
-        data: userData as any,
-      });
-    } catch (error) {
-      logger.error("Create user error:", error);
-      throw error;
-    }
-  }
-
-  private async update(id: string, data: Partial<User>): Promise<User> {
-    try {
-      return await prisma.user.update({
-        where: { id },
-        data,
-      });
-    } catch (error) {
-      logger.error("Update user error:", error);
-      throw error;
-    }
-  }
-
-  // @ts-expect-error - Reserved for future use
-  private async delete(userId: string): Promise<void> {
-    try {
-      await prisma.user.update({
-        where: { id: userId },
-        data: { deletedAt: new Date() },
-      });
-    } catch (error) {
-      logger.error("Delete user error:", error);
-      throw error;
-    }
-  }
-
   // Public methods
   public async getProfile(userId: string): Promise<UserDto> {
     try {
-      const user = await this.findById(userId);
+      const user = await prisma.user.findFirst({
+        where: { id: userId, deletedAt: null },
+      });
 
       if (!user) {
         throw new Error("User not found");
@@ -91,7 +31,9 @@ export class UserService {
 
   public async updateProfile(userId: string, data: UpdateProfileDto): Promise<UserDto> {
     try {
-      const user = await this.findById(userId);
+      const user = await prisma.user.findFirst({
+        where: { id: userId, deletedAt: null },
+      });
 
       if (!user) {
         throw new Error("User not found");
@@ -107,7 +49,7 @@ export class UserService {
       }
 
       // Update fields if provided
-      const updateData: Partial<User> = {};
+      const updateData: import("@prisma/client").Prisma.UserUpdateInput = {};
 
       if (data.username) {
         updateData.username = data.username;
@@ -119,7 +61,10 @@ export class UserService {
         updateData.password = await bcrypt.hash(data.password, 12);
       }
 
-      const updatedUser = await this.update(user.id, updateData);
+      const updatedUser = await prisma.user.update({
+        where: { id: user.id },
+        data: updateData,
+      });
 
       logger.info("User profile updated successfully", { userId: updatedUser.id });
 

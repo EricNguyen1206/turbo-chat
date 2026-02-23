@@ -5,7 +5,7 @@ import { ConversationService } from '@/services/conversation.service';
 import { MessageService } from '@/services/message.service';
 import { RedisService } from '@/services/redis.service';
 import { PresenceService } from '@/services/presence.service';
-import { FriendService } from '@/services/friend.service';
+
 import { logger } from '@/utils/logger';
 import {
   SocketEvent,
@@ -32,7 +32,6 @@ export class WebSocketController {
     const conversationService = new ConversationService();
     const messageService = new MessageService();
     const redisService = new RedisService();
-    const friendService = new FriendService();
 
     // Initialize WebSocket service
     this.wsService = new WebSocketService(
@@ -43,9 +42,7 @@ export class WebSocketController {
 
     // Initialize Presence service
     this.presenceService = new PresenceService(
-      redisService,
-      friendService,
-      this.wsService
+      redisService
     );
 
     logger.info('WebSocketController initialized');

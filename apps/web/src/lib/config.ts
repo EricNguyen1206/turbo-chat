@@ -10,7 +10,7 @@ export const config = {
    * Backend API URL
    * Used for all API requests
    */
-  apiUrl: import.meta.env.VITE_API_URL || 'http://localhost:8080',
+  apiUrl: import.meta.env.VITE_API_URL || '/api/v1',
 
   /**
    * Application name

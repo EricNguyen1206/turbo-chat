@@ -174,6 +174,38 @@ function parseDiff(diffText: string): FileDiff[] {
 // AI Integration
 // ============================================================================
 
+const MAX_RETRIES = 3;
+const INITIAL_DELAY_MS = 2000; // 2 seconds
+
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function callOllamaAPIWithRetry(
+  messages: Array<{ role: string; content: string }>,
+  retryCount = 0
+): Promise<string> {
+  try {
+    return await callOllamaAPI(messages);
+  } catch (error) {
+    const errorMessage = (error as Error).message;
+    const isRetryable = errorMessage.includes('503') ||
+      errorMessage.includes('502') ||
+      errorMessage.includes('429') ||
+      errorMessage.includes('timeout') ||
+      errorMessage.includes('ECONNRESET');
+
+    if (isRetryable && retryCount < MAX_RETRIES) {
+      const delayMs = INITIAL_DELAY_MS * Math.pow(2, retryCount); // Exponential backoff
+      console.error(`[WARN] API call failed (${errorMessage}). Retrying in ${delayMs}ms... (attempt ${retryCount + 1}/${MAX_RETRIES})`);
+      await sleep(delayMs);
+      return callOllamaAPIWithRetry(messages, retryCount + 1);
+    }
+
+    throw error;
+  }
+}
+
 async function callOllamaAPI(messages: Array<{ role: string; content: string }>): Promise<string> {
   const apiKey = process.env.OLLAMA_API_KEY;
 
@@ -196,6 +228,7 @@ async function callOllamaAPI(messages: Array<{ role: string; content: string }>)
       hostname: url.hostname,
       path: url.pathname,
       method: 'POST',
+      timeout: 120000, // 2 minute timeout
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`,
@@ -231,6 +264,11 @@ async function callOllamaAPI(messages: Array<{ role: string; content: string }>)
       });
     });
 
+    req.on('timeout', () => {
+      req.destroy();
+      reject(new Error('Request timeout after 120 seconds'));
+    });
+
     req.on('error', (e) => {
       reject(new Error(`Request failed: ${e.message}`));
     });
@@ -239,6 +277,7 @@ async function callOllamaAPI(messages: Array<{ role: string; content: string }>)
     req.end();
   });
 }
+
 
 async function reviewFileChanges(file: FileDiff): Promise<AIReviewResponse> {
   const systemPrompt = `You are an expert code reviewer. Analyze the code changes and identify specific issues.
@@ -290,7 +329,7 @@ ${diffContent}
 Respond with JSON only.`;
 
   try {
-    const response = await callOllamaAPI([
+    const response = await callOllamaAPIWithRetry([
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPrompt },
     ]);

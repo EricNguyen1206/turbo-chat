@@ -7,13 +7,13 @@
  */
 
 import { useLocation, useNavigate } from 'react-router-dom'
-import { MessageCircle, Users, Settings } from 'lucide-react'
+import { MessageCircle, Settings, LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface TabItem {
   id: string
   label: string
-  icon: React.ElementType
+  icon: LucideIcon
   path: string
 }
 
@@ -23,12 +23,6 @@ const tabs: TabItem[] = [
     label: 'Chats',
     icon: MessageCircle,
     path: '/messages',
-  },
-  {
-    id: 'contacts',
-    label: 'Contacts',
-    icon: Users,
-    path: '/contacts',
   },
   {
     id: 'settings',

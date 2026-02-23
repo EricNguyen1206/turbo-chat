@@ -1,5 +1,5 @@
-import { Link } from "react-router-dom";
-import { Home, Users, Settings } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { Home, Settings, Puzzle, Clock } from "lucide-react";
 import { useSidebarActions } from "@/hooks/useSidebarActions";
 import { SidebarConversations } from "../molecules/SidebarConversations";
 import SidebarDirectMessages from "../molecules/SidebarDirectMessages";
@@ -20,6 +20,8 @@ import {
 } from "@/components/ui/sidebar";
 
 export function AppSidebar() {
+  const location = useLocation();
+
   // Use centralized business logic from actions
   const {
     filteredConversations,
@@ -72,24 +74,39 @@ export function AppSidebar() {
               <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
-                  tooltip="Contacts"
+                  tooltip="Settings"
+                  isActive={location.pathname === "/settings"}
                   className="h-9 rounded-lg transition-all duration-200 hover:bg-sidebar-accent/5 data-[active=true]:bg-sidebar-accent/10"
                 >
-                  <Link to="/contacts" className="flex items-center gap-3">
-                    <Users className="w-[18px] h-[18px] font-light text-sidebar-foreground" />
-                    <span className="font-light text-sidebar-foreground text-sm">Contacts</span>
+                  <Link to="/settings" className="flex items-center gap-3">
+                    <Settings className="w-[18px] h-[18px] font-light text-sidebar-foreground" />
+                    <span className="font-light text-sidebar-foreground text-sm">Settings</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
-                  tooltip="Settings"
+                  tooltip="Skills"
+                  isActive={location.pathname === "/skills"}
                   className="h-9 rounded-lg transition-all duration-200 hover:bg-sidebar-accent/5 data-[active=true]:bg-sidebar-accent/10"
                 >
-                  <Link to="/settings" className="flex items-center gap-3">
-                    <Settings className="w-[18px] h-[18px] font-light text-sidebar-foreground" />
-                    <span className="font-light text-sidebar-foreground text-sm">Settings</span>
+                  <Link to="/skills" className="flex items-center gap-3">
+                    <Puzzle className="w-[18px] h-[18px] font-light text-sidebar-foreground" />
+                    <span className="font-light text-sidebar-foreground text-sm">Skills</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  tooltip="Cron Tasks"
+                  isActive={location.pathname === "/cron"}
+                  className="h-9 rounded-lg transition-all duration-200 hover:bg-sidebar-accent/5 data-[active=true]:bg-sidebar-accent/10"
+                >
+                  <Link to="/cron" className="flex items-center gap-3">
+                    <Clock className="w-[18px] h-[18px] font-light text-sidebar-foreground" />
+                    <span className="font-light text-sidebar-foreground text-sm">Cron Tasks</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

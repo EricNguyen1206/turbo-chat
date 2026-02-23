@@ -1,5 +1,4 @@
 import { BadgeCheck, ChevronsUpDown, LogOut, Moon, Sun } from "lucide-react";
-import OnlineStatusBadge from "../atoms/OnlineStatusBadge";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useTheme } from "@/components/templates/ThemeProvider";
@@ -59,8 +58,6 @@ const NavUser = () => {
                 <AvatarFallback className="rounded-lg bg-sidebar-accent/20 text-sidebar-foreground/60 text-sm font-light">
                   {user?.username?.[0]?.toUpperCase() || "U"}
                 </AvatarFallback>
-                {/* Self online status - always online if logged in, but useful for visual consistency or if we support manual status toggling later */}
-                {user?.id && <OnlineStatusBadge userId={user.id} size="sm" className="bg-green-500" />}
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-relaxed">
                 <span className="truncate font-light text-sidebar-foreground">{user?.username ?? (isLoading ? "Loading..." : "User")}</span>

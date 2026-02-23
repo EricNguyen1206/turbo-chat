@@ -10,22 +10,20 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { io, Socket } from "socket.io-client";
 import { useConversationStore } from "./useConversationStore";
-import { useOnlineStatusStore } from "./useOnlineStatusStore";
 import {
   ConnectionState,
-  SocketEvent,
   JoinedConversationPayload,
   LeftConversationPayload,
   UserJoinedPayload,
   UserLeftPayload,
   ErrorPayload,
-  FriendStatusChangedPayload,
   createJoinConversationPayload,
   createLeaveConversationPayload,
-  createSendMessagePayload,
   ServerToClientEvents,
   ClientToServerEvents,
   MessageDto,
+  SocketEvent,
+  createSendMessagePayload,
 } from "@raven/types";
 import { apiUrl } from "@/lib/config";
 
@@ -283,17 +281,6 @@ export const useSocketStore = create<SocketState>()(
             new CustomEvent("ws-user-left", {
               detail: payload,
             })
-          );
-        });
-
-        // Handle friend status change (presence)
-        socket.on(SocketEvent.FRIEND_STATUS_CHANGED, (payload: FriendStatusChangedPayload) => {
-          console.log("Friend status changed:", payload);
-
-          // Update the online status store
-          useOnlineStatusStore.getState().setUserStatus(
-            payload.user_id,
-            payload.status === 'online'
           );
         });
       },
