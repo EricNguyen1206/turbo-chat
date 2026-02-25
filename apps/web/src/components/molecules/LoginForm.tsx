@@ -2,7 +2,7 @@ import { GoogleLogin } from '@react-oauth/google';
 import { authService } from '@/services/authService';
 import { useSigninMutation } from "@/services/api/auth";
 import { useQueryClient } from "@tanstack/react-query";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState, useRef } from "react";
 import { toast } from "react-toastify";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../ui/card";
@@ -17,6 +17,8 @@ const LoginForm = () => {
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = (location.state as any)?.from?.pathname || "/messages";
   const queryClient = useQueryClient();
 
   // Get getProfile from auth store to update authentication state
@@ -35,7 +37,7 @@ const LoginForm = () => {
       toast.success("Sign in successfully");
 
       // Navigate after auth store is updated
-      navigate("/");
+      navigate(from, { replace: true });
     },
     onError: (_error) => {
       setHasError(true);
@@ -95,6 +97,7 @@ const LoginForm = () => {
               id="email"
               type="email"
               placeholder="name@example.com"
+              defaultValue="admin@gmail.com"
               onFocus={handleInputFocus}
               className={`h-11 rounded-lg text-sm font-light bg-background/50 transition-all duration-200 ${inputErrorClass}`}
               required
@@ -119,6 +122,7 @@ const LoginForm = () => {
               ref={passwordRef}
               id="password"
               type="password"
+              defaultValue="Admin123"
               onFocus={handleInputFocus}
               className={`h-11 rounded-lg text-sm font-light bg-background/50 transition-all duration-200 ${inputErrorClass}`}
               required
@@ -162,7 +166,7 @@ const LoginForm = () => {
                     await getProfile();
                     queryClient.invalidateQueries({ queryKey: ["user", "current"] });
                     toast.success("Sign in successfully");
-                    navigate("/");
+                    navigate(from, { replace: true });
                   } catch (error) {
                     console.error('Google Sign In Failed', error);
                     toast.error("Google Sign In Failed");

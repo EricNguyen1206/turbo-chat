@@ -75,7 +75,7 @@ export class RedisRateLimit {
 // Pre-configured rate limiters
 export const authRateLimit = new RedisRateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  maxRequests: 5, // 5 attempts per 15 minutes
+  maxRequests: 500, // 500 attempts per 15 minutes (increased for testing)
   message: "Too many authentication attempts, please try again later",
 }).middleware();
 

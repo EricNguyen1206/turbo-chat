@@ -57,6 +57,9 @@ RUN pnpm build || true
 
 # Build the API
 WORKDIR /app/apps/api
+# Provide a DATABASE_URL for Prisma validation during build phase
+ARG DATABASE_URL=postgresql://postgres:postgres@localhost:5432/raven?schema=public
+ENV DATABASE_URL=${DATABASE_URL}
 RUN npx prisma generate
 RUN pnpm build
 
@@ -85,6 +88,7 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
 COPY --from=builder /app/apps/api/package.json ./apps/api/package.json
 COPY --from=builder /app/apps/api/prisma ./apps/api/prisma
+COPY --from=builder /app/apps/api/docs ./apps/api/docs
 COPY --from=builder /app/apps/api/node_modules ./apps/api/node_modules
 COPY --from=builder /app/packages ./packages
 

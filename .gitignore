@@ -74,7 +74,7 @@ build/
 *.old
 node_modules
 
-# --- BMAD & AI Context Files ---
+# --- AI Context Files ---
 .agent/
 .agents/
 .claude/

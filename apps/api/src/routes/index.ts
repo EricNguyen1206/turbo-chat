@@ -10,6 +10,7 @@ import websocketRoutes, { initializeWebSocketRoutes } from './websocket.routes';
 import voiceRoutes from './voice.routes';
 import skillsRoutes from './skills.routes';
 import cronRoutes from './cron.routes';
+import zeroclawRoutes from './zeroclaw.routes';
 import { generalRateLimit, authRateLimit } from '@/middleware/rateLimit.middleware';
 import { authenticateToken } from '@/middleware/auth.middleware';
 export const setupRoutes = (app: Application, io: SocketIOServer): void => {
@@ -31,6 +32,7 @@ export const setupRoutes = (app: Application, io: SocketIOServer): void => {
   app.use(`${apiPrefix}/voice`, generalRateLimit, authenticateToken, voiceRoutes);
   app.use(`${apiPrefix}/skills`, generalRateLimit, authenticateToken, skillsRoutes);
   app.use(`${apiPrefix}/cron`, generalRateLimit, authenticateToken, cronRoutes);
+  app.use(`${apiPrefix}/zeroclaw`, generalRateLimit, zeroclawRoutes);
 
   // WebSocket routes
   app.use(`${apiPrefix}/ws`, websocketRoutes);

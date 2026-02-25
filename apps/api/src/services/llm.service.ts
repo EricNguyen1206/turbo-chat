@@ -2,10 +2,12 @@ import OpenAI from 'openai';
 import { logger } from '@/utils/logger';
 import { MessageDto } from '@raven/types';
 import { mcpService } from './mcp.service';
+import { config } from '@/config/config';
 
-// Default to a missing key error later if not set
+// Initialize OpenAI client with configurable base URL and API key
 const openai = new OpenAI({
-  apiKey: process.env['OPENAI_API_KEY'] || 'MISSING_API_KEY',
+  apiKey: config.llm.apiKey,
+  baseURL: config.llm.apiBaseUrl,
 });
 
 export class LLMService {

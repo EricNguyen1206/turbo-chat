@@ -1,5 +1,19 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, Settings, Puzzle, Clock } from "lucide-react";
+import {
+  LayoutDashboard,
+  MessageSquare,
+  Wrench,
+  Puzzle,
+  Clock,
+  Database,
+  Settings,
+  Plug,
+  DollarSign,
+  ScrollText,
+  Stethoscope,
+  Link2,
+  Home,
+} from "lucide-react";
 import { useSidebarActions } from "@/hooks/useSidebarActions";
 import { SidebarConversations } from "../molecules/SidebarConversations";
 import SidebarDirectMessages from "../molecules/SidebarDirectMessages";
@@ -18,6 +32,44 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
+
+// Sidebar nav items grouped by category
+const agentItems = [
+  { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
+  { label: "Agent Chat", path: "/agent-chat", icon: MessageSquare },
+  { label: "Tools", path: "/tools", icon: Wrench },
+  { label: "Skills", path: "/skills", icon: Puzzle },
+  { label: "Cron Tasks", path: "/cron", icon: Clock },
+  { label: "Memory", path: "/memory", icon: Database },
+];
+
+const systemItems = [
+  { label: "Config", path: "/config", icon: Settings },
+  { label: "Integrations", path: "/integrations", icon: Plug },
+  { label: "Cost", path: "/cost", icon: DollarSign },
+  { label: "Logs", path: "/logs", icon: ScrollText },
+  { label: "Doctor", path: "/doctor", icon: Stethoscope },
+  { label: "Pairing", path: "/pairing", icon: Link2 },
+];
+
+function NavItem({ item, isActive }: { item: (typeof agentItems)[0]; isActive: boolean }) {
+  const Icon = item.icon;
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton
+        asChild
+        tooltip={item.label}
+        isActive={isActive}
+        className="h-9 rounded-lg transition-all duration-200 hover:bg-sidebar-accent/5 data-[active=true]:bg-sidebar-accent/10"
+      >
+        <Link to={item.path} className="flex items-center gap-3">
+          <Icon className="w-[18px] h-[18px] font-light text-sidebar-foreground" />
+          <span className="font-light text-sidebar-foreground text-sm">{item.label}</span>
+        </Link>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
+}
 
 export function AppSidebar() {
   const location = useLocation();
@@ -44,72 +96,62 @@ export function AppSidebar() {
           className="w-7 h-7 min-w-7 min-h-7 rounded-md object-contain flex-shrink-0 transition-all duration-300 ease-out opacity-80 hover:opacity-100"
         />
         <h1 className="font-light text-base tracking-wide text-sidebar-foreground/90 whitespace-nowrap overflow-hidden transition-all duration-300 ease-out group-data-[collapsible=icon]:w-0 group-data-[collapsible=icon]:opacity-0">
-          Raven
+          ClawX
         </h1>
       </SidebarHeader>
 
-      {/* Search Section - Uncomment when needed */}
-      {/* <SearchSection searchQuery={searchQuery} setSearchQuery={setSearchQuery} /> */}
-
       <SidebarContent className="px-3">
-        {/* Navigation Section - Subtle, spacious */}
-        <SidebarGroup className="mb-8">
+        {/* Agent Section */}
+        <SidebarGroup className="mb-4">
           <SidebarGroupLabel className="text-[11px] uppercase tracking-widest font-light text-muted-foreground/60 mb-3 px-3">
-            Navigate
+            Agent
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="gap-1">
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  tooltip="Home"
-                  className="h-9 rounded-lg transition-all duration-200 hover:bg-sidebar-accent/5 data-[active=true]:bg-sidebar-accent/10"
-                >
-                  <Link to="/" className="flex items-center gap-3">
-                    <Home className="w-[18px] h-[18px] font-light text-sidebar-foreground" />
-                    <span className="font-light text-sidebar-foreground text-sm">Home</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  tooltip="Settings"
-                  isActive={location.pathname === "/settings"}
-                  className="h-9 rounded-lg transition-all duration-200 hover:bg-sidebar-accent/5 data-[active=true]:bg-sidebar-accent/10"
-                >
-                  <Link to="/settings" className="flex items-center gap-3">
-                    <Settings className="w-[18px] h-[18px] font-light text-sidebar-foreground" />
-                    <span className="font-light text-sidebar-foreground text-sm">Settings</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  tooltip="Skills"
-                  isActive={location.pathname === "/skills"}
-                  className="h-9 rounded-lg transition-all duration-200 hover:bg-sidebar-accent/5 data-[active=true]:bg-sidebar-accent/10"
-                >
-                  <Link to="/skills" className="flex items-center gap-3">
-                    <Puzzle className="w-[18px] h-[18px] font-light text-sidebar-foreground" />
-                    <span className="font-light text-sidebar-foreground text-sm">Skills</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  tooltip="Cron Tasks"
-                  isActive={location.pathname === "/cron"}
-                  className="h-9 rounded-lg transition-all duration-200 hover:bg-sidebar-accent/5 data-[active=true]:bg-sidebar-accent/10"
-                >
-                  <Link to="/cron" className="flex items-center gap-3">
-                    <Clock className="w-[18px] h-[18px] font-light text-sidebar-foreground" />
-                    <span className="font-light text-sidebar-foreground text-sm">Cron Tasks</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              {agentItems.map((item) => (
+                <NavItem
+                  key={item.path}
+                  item={item}
+                  isActive={location.pathname === item.path}
+                />
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* System Section */}
+        <SidebarGroup className="mb-4">
+          <SidebarGroupLabel className="text-[11px] uppercase tracking-widest font-light text-muted-foreground/60 mb-3 px-3">
+            System
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu className="gap-1">
+              {systemItems.map((item) => (
+                <NavItem
+                  key={item.path}
+                  item={item}
+                  isActive={location.pathname === item.path}
+                />
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Chat Section */}
+        <SidebarGroup className="mb-4">
+          <SidebarGroupLabel className="text-[11px] uppercase tracking-widest font-light text-muted-foreground/60 mb-3 px-3">
+            Chat
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu className="gap-1">
+              <NavItem
+                item={{ label: "Messages", path: "/messages", icon: Home }}
+                isActive={location.pathname.startsWith("/messages")}
+              />
+              <NavItem
+                item={{ label: "Settings", path: "/settings", icon: Settings }}
+                isActive={location.pathname === "/settings"}
+              />
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -139,3 +181,4 @@ export function AppSidebar() {
 }
 
 export default AppSidebar;
+

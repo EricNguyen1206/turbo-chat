@@ -18,6 +18,18 @@ import SkillsPage from '@/pages/SkillsPage'
 import CronPage from '@/pages/CronPage'
 import NotFoundPage from '@/pages/NotFoundPage'
 
+// ZeroClaw / ClawX Pages
+import DashboardPage from '@/pages/DashboardPage'
+import AgentChatPage from '@/pages/AgentChatPage'
+import ToolsPage from '@/pages/ToolsPage'
+import MemoryPage from '@/pages/MemoryPage'
+import ConfigPage from '@/pages/ConfigPage'
+import IntegrationsPage from '@/pages/IntegrationsPage'
+import CostPage from '@/pages/CostPage'
+import LogsPage from '@/pages/LogsPage'
+import DoctorPage from '@/pages/DoctorPage'
+import PairingPage from '@/pages/PairingPage'
+
 // Layouts
 import MessagesLayout from '@/components/templates/MessagesLayout'
 
@@ -51,17 +63,30 @@ function App() {
             <Route element={<AuthGuard />}>
               <Route element={<MessagesWebSocketProvider />}>
                 <Route element={<MessagesLayout />}>
+                  {/* Original chat routes */}
                   <Route path="/messages" element={<HomePage />} />
                   <Route path="/messages/:id" element={<ConversationPage />} />
                   <Route path="/settings" element={<SettingsPage />} />
+
+                  {/* ZeroClaw / ClawX routes */}
+                  <Route path="/dashboard" element={<DashboardPage />} />
+                  <Route path="/agent-chat" element={<AgentChatPage />} />
+                  <Route path="/tools" element={<ToolsPage />} />
                   <Route path="/skills" element={<SkillsPage />} />
                   <Route path="/cron" element={<CronPage />} />
+                  <Route path="/memory" element={<MemoryPage />} />
+                  <Route path="/config" element={<ConfigPage />} />
+                  <Route path="/integrations" element={<IntegrationsPage />} />
+                  <Route path="/cost" element={<CostPage />} />
+                  <Route path="/logs" element={<LogsPage />} />
+                  <Route path="/doctor" element={<DoctorPage />} />
+                  <Route path="/pairing" element={<PairingPage />} />
                 </Route>
               </Route>
             </Route>
 
             {/* Redirects */}
-            <Route path="/" element={<Navigate to="/messages" replace />} />
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>
