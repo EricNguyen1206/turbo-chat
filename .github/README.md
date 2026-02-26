@@ -34,18 +34,6 @@ Complete pipeline that:
 - Tests frontend and backend in parallel
 - Deploys both apps if tests pass
 
-### 5. AI PR Review (`.github/workflows/pr-review.yml`)
-
-Automated code review powered by Ollama Cloud:
-- Triggers on new PRs and updates
-- Analyzes code changes using AI (kimi-k2.5:cloud model)
-- **Creates inline review comments** on specific lines with issues
-- Each comment includes:
-  - **Priority** (🔴 HIGH / 🟡 MEDIUM / 🟢 LOW)
-  - **Review**: Description of the issue
-  - **Suggestion**: How to fix or improve
-- Checks for bugs, security issues, and best practices
-
 
 ## Required Secrets
 

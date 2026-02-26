@@ -76,6 +76,7 @@ node_modules
 
 # --- BMAD & AI Context Files ---
 .agent/
+.agents/
 .claude/
 _bmad/
 _bmad-output/
