@@ -46,13 +46,13 @@ COPY apps/api ./apps/api
 COPY packages ./packages
 
 # Build shared packages first
-WORKDIR /app/packages/shared
-RUN pnpm build || true
-
 WORKDIR /app/packages/types
 RUN pnpm build || true
 
 WORKDIR /app/packages/validators
+RUN pnpm build || true
+
+WORKDIR /app/packages/shared
 RUN pnpm build || true
 
 # Build the API

@@ -42,13 +42,11 @@ export const config = {
     corsOrigin: process.env["WS_CORS_ORIGIN"]?.split(",") || ["http://localhost:3000", "http://localhost:3001"],
   },
   logging: {
-    level: "debug"// process.env["LOG_LEVEL"] || "debug",
+    level: process.env["LOG_LEVEL"] || "debug",
   },
   cookie: {
     httpOnly: true,
     secure: process.env["NODE_ENV"] === "production",
-    // SameSite=None is required for cross-site cookies (Render backend + Vercel frontend)
-    // In development (localhost), 'lax' is fine.
     sameSite: (process.env["NODE_ENV"] === "production" ? "none" : "lax") as "none" | "lax" | "strict",
     path: "/",
   },
