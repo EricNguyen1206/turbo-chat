@@ -195,8 +195,11 @@ export class AuthService {
 
       if (!user) {
         // Create new user if not exists
-        let username = profile.name || profile.email.split('@')[0];
+        let username = (profile.name ?? profile.email.split('@')[0]) as string;
         username = username.replace(/[^a-zA-Z0-9_]/g, '');
+        if (!username) {
+          username = `user${Math.floor(1000 + Math.random() * 9000)}`;
+        }
 
         // Ensure username uniqueness
         const existingUsername = await User.findOne({ username });
@@ -228,21 +231,22 @@ export class AuthService {
       let changed = false;
       if (existingProviderIndex === -1) {
         // Link new provider to existing account (Auto-Link by Email)
-        user.providers.push({
-          name: profile.provider,
-          providerId: profile.providerId,
-          email: profile.email,
-          avatar: profile.avatar,
-          linkedAt: new Date()
-        });
+        const newProvider: import("@/models/User").IProvider = profile.avatar !== undefined
+          ? { name: profile.provider, providerId: profile.providerId, email: profile.email, avatar: profile.avatar, linkedAt: new Date() }
+          : { name: profile.provider, providerId: profile.providerId, email: profile.email, linkedAt: new Date() };
+        user.providers.push(newProvider);
         changed = true;
         logger.info(`Linked ${profile.provider} to existing user`, { userId: user.id, email: user.email });
       } else {
         // Update provider details if they changed (e.g. avatar)
         const provider = user.providers[existingProviderIndex];
-        if (provider.avatar !== profile.avatar || provider.email !== profile.email) {
-          user.providers[existingProviderIndex].avatar = profile.avatar || provider.avatar;
-          user.providers[existingProviderIndex].email = profile.email;
+        if (provider !== undefined && (provider.avatar !== profile.avatar || provider.email !== profile.email)) {
+          if (profile.avatar !== undefined) {
+            user.providers[existingProviderIndex]!.avatar = profile.avatar;
+          } else if (provider.avatar !== undefined) {
+            user.providers[existingProviderIndex]!.avatar = provider.avatar;
+          }
+          user.providers[existingProviderIndex]!.email = profile.email;
           changed = true;
         }
       }

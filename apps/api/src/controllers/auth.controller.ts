@@ -181,11 +181,11 @@ export class AuthController {
         maxAge: 30 * 24 * 60 * 60 * 1000,
       });
 
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const frontendUrl = process.env['FRONTEND_URL'] ?? 'http://localhost:3000';
       res.redirect(`${frontendUrl}/auth/callback?success=true`);
     } catch (error: any) {
       logger.error('OAuth callback failed:', error);
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const frontendUrl = process.env['FRONTEND_URL'] ?? 'http://localhost:3000';
       res.redirect(`${frontendUrl}/auth/callback?error=${encodeURIComponent(error.message || 'Authentication failed')}`);
     }
   };

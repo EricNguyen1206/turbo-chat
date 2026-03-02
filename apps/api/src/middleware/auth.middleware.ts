@@ -1,16 +1,15 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { config } from "@/config/config";
-import { User, IUser } from "@/models/User";
+import { User } from "@/models/User";
 import { logger } from "@/utils/logger";
 
-export interface AuthenticatedRequest extends Request {
-  user?: IUser;
-  userId?: string;
-}
+// AuthenticatedRequest is a convenience alias — req.user and req.userId
+// are now globally augmented on Express.Request via src/types/express.d.ts
+export type AuthenticatedRequest = Request;
 
 export const authenticateToken = async (
-  req: AuthenticatedRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
@@ -48,7 +47,7 @@ export const authenticateToken = async (
       return;
     }
 
-    // Add user to request object
+    // Add user to request object (augmented via Express global namespace)
     req.user = user;
     req.userId = user.id;
 
