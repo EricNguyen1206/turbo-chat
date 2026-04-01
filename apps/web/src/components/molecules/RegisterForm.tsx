@@ -15,8 +15,8 @@ const RegisterForm = () => {
   const [hasError, setHasError] = useState(false);
 
   // Use state for password fields to enable reactive validation
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [password, setPassword] = useState("Admin123");
+  const [confirmPassword, setConfirmPassword] = useState("Admin123");
 
   // Reactive validation checks based on state
   const hasMinLength = useMemo(() => password.length >= 6, [password]);
@@ -134,6 +134,7 @@ const RegisterForm = () => {
               id="name"
               type="text"
               placeholder="John Doe"
+              defaultValue="Admin"
               ref={nameRef}
               onFocus={handleInputFocus}
               className={`h-11 rounded-lg text-sm font-light bg-background/50 transition-all duration-200 ${inputErrorClass}`}
@@ -154,6 +155,7 @@ const RegisterForm = () => {
               id="email"
               type="email"
               placeholder="name@example.com"
+              defaultValue="admin@gmail.com"
               ref={emailRef}
               onFocus={handleInputFocus}
               className={`h-11 rounded-lg text-sm font-light bg-background/50 transition-all duration-200 ${inputErrorClass}`}

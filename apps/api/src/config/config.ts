@@ -50,4 +50,9 @@ export const config = {
     sameSite: (process.env["NODE_ENV"] === "production" ? "none" : "lax") as "none" | "lax" | "strict",
     path: "/",
   },
+  llm: {
+    apiBaseUrl: process.env["LLM_API_BASE_URL"] || "https://api.openai.com/v1",
+    apiKey: process.env["LLM_API_KEY"] || "MISSING_API_KEY",
+    defaultModel: process.env["LLM_DEFAULT_MODEL"] || "gpt-4o-mini",
+  },
 };

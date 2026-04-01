@@ -2,6 +2,8 @@ import { Message } from "@/models/Message";
 import { IUser } from "@/models/User";
 import { MessageDto } from "@raven/types";
 import { logger } from "@/utils/logger";
+import { Conversation } from "@/models/Conversation";
+import { encode } from "gpt-tokenizer";
 
 export class MessageService {
   // Private repository methods
@@ -99,8 +101,23 @@ export class MessageService {
     fileName?: string;
   }): Promise<MessageDto> {
     try {
-      const message = new Message(data);
+      let tokenCount = 0;
+      if (data.text) {
+        tokenCount = encode(data.text).length;
+      }
+
+      const message = new Message({
+        ...data,
+        tokenCount
+      });
       const savedMessage = await message.save();
+
+      if (data.conversationId && tokenCount > 0) {
+        await Conversation.updateOne(
+          { _id: data.conversationId },
+          { $inc: { totalTokensUsed: tokenCount } }
+        );
+      }
 
       // Reload with relations
       const messageWithRelations = await Message.findById(savedMessage._id).populate<{

@@ -1,0 +1,44 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=raven
+    ports:
+      - "5433:5432"
+    restart: always
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      args:
+        # Prisma 7 still needs this at build time for validation if url = env("DATABASE_URL")
+        - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/raven?schema=public
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/raven?schema=public
+    depends_on:
+      - postgres
+    restart: always
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:8080/api/v1
+    ports:
+      - "3001:3001"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - api
+    restart: always
