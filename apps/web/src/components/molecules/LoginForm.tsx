@@ -54,11 +54,6 @@ const LoginForm = () => {
     }
   };
 
-  const handleGoogleLogin = () => {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1';
-    window.location.href = `${apiUrl}/auth/google`;
-  };
-
   const isLoading = signinMutation.isPending;
 
   const inputErrorClass = hasError
@@ -151,31 +146,9 @@ const LoginForm = () => {
           </div>
         </div>
 
-          <div className="flex justify-center">
-            <GoogleLogin
-              onSuccess={async (credentialResponse) => {
-                if (credentialResponse.credential) {
-                  try {
-                    await authService.googleSignIn(credentialResponse.credential);
-                    await getProfile();
-                    queryClient.invalidateQueries({ queryKey: ["user", "current"] });
-                    toast.success("Sign in successfully");
-                    navigate(from, { replace: true });
-                  } catch (error) {
-                    console.error('Google Sign In Failed', error);
-                    toast.error("Google Sign In Failed");
-                  }
-                }
-              }}
-              onError={() => {
-                toast.error("Google Sign In Failed");
-              }}
-              useOneTap
-              theme="filled_black"
-              shape="pill"
-            />
-          </div>
-        </form>
+        <div className="flex justify-center">
+          <GithubLoginButton />
+        </div>
       </CardContent>
 
       <CardFooter className="flex justify-center pt-6">
@@ -186,7 +159,7 @@ const LoginForm = () => {
           </Link>
         </p>
       </CardFooter>
-    </Card >
+    </Card>
   );
 };
 
