@@ -193,5 +193,5 @@ async createConversation(name: string, ownerId: string, type: ConversationType, 
 
 ## Related Documentation
 
-- **[Database Schema](./DATABASE_SCHEMA.md)** - Full details on models
+- **[Database Design](./DATABASE_DESIGN.md)** - Full details on models
 - **[Chat Realtime Feature](./CHAT_REALTIME_FEATURE.md)** - Messaging within these conversations

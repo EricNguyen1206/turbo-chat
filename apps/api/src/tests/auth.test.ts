@@ -1,4 +1,3 @@
-import mongoose from 'mongoose';
 import { User } from '../models/User';
 
 describe('User model — providers field', () => {
@@ -19,7 +18,9 @@ describe('User model — providers field', () => {
     const err = user.validateSync();
     expect(err).toBeUndefined();
     expect(user.providers).toHaveLength(1);
-    expect(user.providers[0].name).toBe('google');
+    const firstProvider = user.providers[0];
+    expect(firstProvider).toBeDefined();
+    expect(firstProvider?.name).toBe('google');
   });
 
   it('should allow a user with no providers (email+password user)', () => {
@@ -52,7 +53,9 @@ describe('AuthService.findOrCreateOAuthUser()', () => {
   });
 
   it('should create a new user when email does not exist', async () => {
-    jest.spyOn(User, 'findOne').mockResolvedValueOnce(null); // no existing user
+    jest.spyOn(User, 'findOne')
+      .mockResolvedValueOnce(null) // no existing user by email
+      .mockResolvedValueOnce(null); // username not taken
     const saveMock = jest.fn().mockResolvedValue({
       id: 'new-user-id',
       username: 'New User',
@@ -68,7 +71,14 @@ describe('AuthService.findOrCreateOAuthUser()', () => {
   });
 
   it('should auto-link existing user when email matches', async () => {
-    const existingUser = {
+    const existingUser: {
+      id: string;
+      username: string;
+      email: string;
+      providers: { name: string; providerId: string; email: string; avatar?: string; linkedAt?: Date }[];
+      avatar: undefined;
+      save: jest.Mock;
+    } = {
       id: 'existing-user-id',
       username: 'ExistingUser',
       email: 'newuser@example.com',
@@ -82,7 +92,9 @@ describe('AuthService.findOrCreateOAuthUser()', () => {
     expect(existingUser.save).toHaveBeenCalled();
     // Provider was upserted
     expect(existingUser.providers).toHaveLength(1);
-    expect(existingUser.providers[0].providerId).toBe('google-sub-456');
+    const linkedProvider = existingUser.providers[0];
+    expect(linkedProvider).toBeDefined();
+    expect(linkedProvider?.providerId).toBe('google-sub-456');
     expect(result.email).toBe('newuser@example.com');
   });
 
@@ -102,4 +114,3 @@ describe('AuthService.findOrCreateOAuthUser()', () => {
     expect(existingUser.providers).toHaveLength(1);
   });
 });
-

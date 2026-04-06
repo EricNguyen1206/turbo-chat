@@ -1,20 +1,20 @@
 # Authentication Feature Flow
 
-> **Last Updated:** 2026-02-23
+> **Last Updated:** 2026-04-06
 > **Feature:** Authentication & Session Management
-> **Components:** JWT, HttpOnly Cookies, Google OAuth (GIS), Prisma
+> **Components:** JWT, HttpOnly Cookies, Google OAuth (GIS), GitHub OAuth, MongoDB (Mongoose)
 > **Status:** Implemented
 
-This document details the secure authentication mechanism used in the Erion Raven application, including standard Email/Password flow and Google Sign-In. Both methods result in generic JWTs stored in HTTP-Only cookies.
+This document describes authentication in Erion Raven, including email/password and OAuth login flows. Both flows produce JWT credentials delivered via HTTP-only cookies, with refresh sessions persisted in MongoDB.
 
 ## Overview
 
-The authentication system is designed to be secure and stateless (for access) while maintaining control over long-term sessions.
+The authentication system is split between short-lived stateless access tokens and persisted refresh sessions.
 
-- **Access Token:** Short-lived (15 minutes), stateless JWT used for API authorization. Stored in an `httpOnly` cookie.
-- **Refresh Token:** Long-lived (30 days), stateful token stored in the database (`Session` model) and an `httpOnly` cookie. Used to obtain new access tokens.
-- **Google Sign-In:** Uses Google Identity Services (GIS) to verify identity, then maps to an internal User record.
-- **Security:** CSRF protection via SameSite cookies (`lax` in dev, `strict`/`lax` in prod). XSS protection by making cookies inaccessible to JavaScript.
+- **Access Token:** Short-lived JWT (`15m` by default) used for API authorization.
+- **Refresh Token:** Long-lived random token (`30d` by default) stored in the `Session` collection and an `httpOnly` cookie.
+- **OAuth Sign-In:** Google and GitHub profiles are resolved/linked into `User.providers`.
+- **Cookie Security:** `httpOnly`, environment-aware `secure`, and `sameSite` settings.
 
 ## Architecture & Data Flow
 
@@ -25,67 +25,73 @@ sequenceDiagram
     participant Client as Frontend
     participant API as Auth Controller
     participant Service as Auth Service
-    participant DB as PostgreSQL (Prisma)
+    participant DB as MongoDB (Mongoose)
 
-    Client->>API: POST /api/auth/signin {email, password}
-    API->>Service: Validate & Generate Tokens
-    Service->>DB: upsert Session (refreshToken)
+    Client->>API: POST /api/v1/auth/signin {email, password}
+    API->>Service: Validate credentials
+    Service->>DB: Find User + create Session
     Service-->>API: User Data + Tokens
-    
+
     API-->>Client: 200 OK (User JSON)
-    Note right of API: Set-Cookie: accessToken (httpOnly, 15m)
-    Note right of API: Set-Cookie: refreshToken (httpOnly, 30d)
+    Note right of API: Set-Cookie: accessToken (httpOnly, short-lived)
+    Note right of API: Set-Cookie: refreshToken (httpOnly, long-lived)
 ```
 
-### 2. Google Sign-In Flow
+### 2. Google/GitHub OAuth Flow
 
 ```mermaid
 sequenceDiagram
-    participant Google as Google Identity
+    participant Provider as OAuth Provider
     participant Client as Frontend
     participant API as Auth Controller
     participant Service as Auth Service
-    participant DB as PostgreSQL (Prisma)
+    participant DB as MongoDB (Mongoose)
 
-    Client->>Google: Request Sign In (Popup)
-    Google-->>Client: Returns ID Token (JWT)
-    
-    Client->>API: POST /api/auth/google { credential: ID Token }
-    API->>Service: Verify Google Token (via google-auth-library)
-    Service->>DB: Find or Create User (UPSERT)
+    Client->>Provider: OAuth login
+    Provider-->>Client: Identity payload/token
+
+    Client->>API: POST /api/v1/auth/google or /api/v1/auth/github
+    API->>Service: Verify provider identity
+    Service->>DB: Find or create user by email
+    Service->>DB: Link provider under User.providers
     Service->>DB: Create Session
     Service-->>API: User Data + Tokens
-    
+
     API-->>Client: 200 OK
-    Note right of API: Set-Cookie: accessToken (httpOnly, 15m)
-    Note right of API: Set-Cookie: refreshToken (httpOnly, 30d)
+    Note right of API: Set-Cookie: accessToken + refreshToken
 ```
 
-## Database Schema (Prisma)
+## MongoDB Collections (Mongoose Models)
 
-### User Model
+### User Model (`apps/api/src/models/User.ts`)
 
-```prisma
-model User {
-  id           String    @id @default(cuid())
-  username     String    @unique
-  email        String    @unique
-  password     String?
-  avatar       String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+```typescript
+interface IUser {
+  username: string;
+  email: string;
+  password?: string;
+  avatar?: string;
+  providers: Array<{
+    name: 'google' | 'github';
+    providerId: string;
+    email: string;
+    avatar?: string;
+    linkedAt: Date;
+  }>;
+  createdAt: Date;
+  updatedAt: Date;
 }
 ```
 
-### Session Model
+### Session Model (`apps/api/src/models/Session.ts`)
 
-```prisma
-model Session {
-  id           String    @id @default(cuid())
-  userId       String
-  refreshToken String    @unique
-  expiresAt    DateTime
-  createdAt    DateTime  @default(now())
+```typescript
+interface ISession {
+  userId: ObjectId;
+  refreshToken: string;
+  expiresAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 ```
 
@@ -93,16 +99,16 @@ model Session {
 
 Base Route: `/api/v1/auth`
 
-| Route | Endpoint | Description | Method |
-|-------|----------|-------------|--------|
-| `/signup` | `/api/v1/auth/signup` | Register a new user | `POST` |
-| `/signin` | `/api/v1/auth/signin` | Sign in a user | `POST` |
-| `/google` | `/api/v1/auth/google` | Sign in with Google | `POST` |
-| `/refresh` | `/api/v1/auth/refresh` | Refresh access token | `POST` |
-| `/signout` | `/api/v1/auth/signout` | Sign out a user | `POST` |
+| Endpoint | Description | Method |
+|----------|-------------|--------|
+| `/signup` | Register a new user | `POST` |
+| `/signin` | Sign in with email/password | `POST` |
+| `/google` | Sign in with Google OAuth | `POST` |
+| `/github` | Sign in with GitHub OAuth | `POST` |
+| `/refresh` | Refresh access token | `POST` |
+| `/signout` | Sign out a user | `POST` |
 
 ## Related Documentation
 
 - **[Database Design](./DATABASE_DESIGN.md)**
 - **[High-Level Architecture](./HIGH_LEVEL_DESIGN.md)**
-

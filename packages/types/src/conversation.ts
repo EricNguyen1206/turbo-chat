@@ -63,4 +63,3 @@ export interface ConversationDetailApiResponse {
   message: string;
   data: ConversationDetailResponseDto;
 }
-

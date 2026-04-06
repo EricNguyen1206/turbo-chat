@@ -124,7 +124,7 @@ export class UserService {
 
   public async searchUsers(username: string): Promise<UserDto[]> {
     try {
-      // Use regex for case-insensitive search (equivalent to ILIKE in PostgreSQL)
+      // Use regex for case-insensitive username search
       const users = await User.find({
         username: { $regex: username, $options: "i" },
         deletedAt: null,

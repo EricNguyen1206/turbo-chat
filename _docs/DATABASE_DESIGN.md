@@ -1,33 +1,35 @@
 # Database Schema
 
-> **Last Updated:** 2026-02-23
+> **Last Updated:** 2026-04-06
 > **Feature:** Database Design & Schema
-> **Components:** PostgreSQL, Prisma ORM
+> **Components:** MongoDB, Mongoose ODM
 > **Status:** Implemented
 
 ## 🎯 Overview
 
-The **erion-raven** application uses PostgreSQL as its primary database with Prisma as the ORM. The schema is optimized for real-time messaging, AI chatbot interactions, and secure user management.
+The **erion-raven** backend uses **MongoDB** as its primary database and **Mongoose** as the ODM. Data is modeled around users, conversations, participants, messages, auth sessions, and relationship workflows.
 
 ### Design Principles
 
-- **Primary Keys:** Uses `cuid()` for globally unique, sortable String IDs.
-- **Timestamps:** Every model includes `createdAt` and `updatedAt` (auto-managed by Prisma).
-- **Soft Deletes:** Key models (`User`, `Conversation`, `Message`) include a `deletedAt` field for logical deletion.
-- **Relational Integrity:** Foreign key constraints and cascading deletes are enforced at the database level.
-- **JSON Support:** Specific fields (like `llmProviders` and `voiceSettings`) use native PostgreSQL JSONB for flexibility.
+- **Document IDs:** MongoDB ObjectId-based identifiers.
+- **Timestamps:** Most models use `timestamps: true` for `createdAt` / `updatedAt`.
+- **Soft Deletes:** Core chat models include `deletedAt` for logical deletion.
+- **Index-First Access Patterns:** Models define indexes for common read/write paths.
+- **Schema Flexibility:** Provider-linked identity fields allow controlled OAuth profile syncing.
 
 ---
 
-## 📊 Models
+## 📊 Collections
 
-| Model | Purpose | Key Relationships |
-|-------|---------|-------------------|
-| `User` | Core identity and profile | Root for `Session`, `Conversation`, `Message`, `AIProfile` |
-| `Session` | JWT refresh token management | Belongs to `User` |
-| `Conversation` | Chat rooms (Direct/Group/AI) | Owned by `User`, Contains `Message` |
-| `Message` | Individual chat entries | Sent by `User`, belongs to `Conversation` |
-| `AIProfile` | Presets for AI assistants | Created by `User`, used by `Conversation` |
+| Collection / Model | Purpose | Key Relationships |
+|--------------------|---------|-------------------|
+| `User` | Core identity/profile | Referenced by sessions, conversations, messages, profiles |
+| `Session` | Refresh token persistence | Belongs to `User` (`userId`) |
+| `Conversation` | Chat container (direct/group) | Owned by `User`, referenced by participants/messages |
+| `Participant` | Membership + unread/read state | Links `User` and `Conversation` |
+| `Message` | Message documents | Belongs to `User` (`senderId`) and `Conversation` |
+| `FriendRequest` | Friend request workflow state | Links two users (`fromUserId`, `toUserId`) |
+| `Friends` | Established friendship edge | Links two users (`userId`, `friendId`) |
 
 ---
 
@@ -38,127 +40,121 @@ erDiagram
     User ||--o{ Session : has
     User ||--o{ Conversation : owns
     User ||--o{ Message : sends
-    User ||--o{ AIProfile : creates
-    
+
+    Conversation ||--o{ Participant : has
     Conversation ||--o{ Message : contains
-    AIProfile ||--o{ Conversation : configures
-    
-    User {
-        String id PK
-        String username UK
-        String email UK
-        String password
-        String avatar
-        DateTime createdAt
-        DateTime updatedAt
-        DateTime deletedAt
-        Json llmProviders
-        String defaultModel
-    }
-    
-    Session {
-        String id PK
-        String userId FK
-        String refreshToken UK
-        DateTime expiresAt
-        DateTime createdAt
-    }
-    
-    Conversation {
-        String id PK
-        String name
-        String ownerId FK
-        String type
-        Boolean isAiAgent
-        String systemPrompt
-        String aiModel
-        String aiProfileId FK
-        Int totalTokensUsed
-        Int maxContextWindow
-        DateTime createdAt
-        DateTime deletedAt
-    }
-    
-    Message {
-        String id PK
-        String senderId FK
-        String conversationId FK
-        String text
-        String url
-        Int tokenCount
-        Boolean isArchived
-        DateTime createdAt
-    }
-    
-    AIProfile {
-        String id PK
-        String userId FK
-        String name
-        String systemPrompt
-        String model
-        Json voiceSettings
-    }
+
+    User ||--o{ FriendRequest : sends
+    User ||--o{ FriendRequest : receives
+    User ||--o{ Friends : relates_to
 ```
 
 ---
 
 ## 📝 Model Details
 
-### 1. User
-Stores account credentials, profile settings, and AI provider configurations.
+### User
 
-```prisma
-model User {
-  id           String    @id @default(cuid())
-  username     String    @unique
-  email        String    @unique
-  password     String?
-  avatar       String?
-  llmProviders Json?
-  defaultModel String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  deletedAt    DateTime?
+```typescript
+interface IUser {
+  _id: ObjectId;
+  username: string;
+  email: string;
+  password?: string;
+  avatar?: string;
+  providers: Array<{
+    name: 'google' | 'github';
+    providerId: string;
+    email: string;
+    avatar?: string;
+    linkedAt: Date;
+  }>;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
 }
 ```
 
-### 2. Conversation
-Represents a chat session. Can be a standard group/direct chat or an AI-powered assistant session.
+### Session
 
-```prisma
-model Conversation {
-  id               String    @id @default(cuid())
-  name             String
-  ownerId          String
-  type             String    @default("GROUP")
-  isAiAgent        Boolean   @default(true)
-  systemPrompt     String?
-  aiModel          String?
-  aiProfileId      String?
-  totalTokensUsed  Int?
-  maxContextWindow Int?
-  createdAt        DateTime  @default(now())
+```typescript
+interface ISession {
+  _id: ObjectId;
+  userId: ObjectId;
+  refreshToken: string;
+  expiresAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+### Conversation
+
+```typescript
+interface IConversation {
+  _id: ObjectId;
+  name: string;
+  ownerId: ObjectId;
+  type: 'DIRECT' | 'GROUP';
+  avatar?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
+}
+```
+
+### Participant
+
+```typescript
+interface IParticipant {
+  _id: ObjectId;
+  userId: ObjectId;
+  conversationId: ObjectId;
+  joinedAt: Date;
+  unreadCount: number;
+  lastReadAt: Date;
+  deletedAt?: Date | null;
+}
+```
+
+### Message
+
+```typescript
+interface IMessage {
+  _id: ObjectId;
+  senderId: ObjectId;
+  conversationId?: ObjectId;
+  text?: string;
+  url?: string;
+  fileName?: string;
+  isArchived?: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
 }
 ```
 
 ---
 
-## 🔄 Migration & Maintenance
+## ⚡ Indexes
 
-### Schema Changes
-Prisma Migrate is used for all DDL operations:
+The current model layer defines indexes to support common query paths:
 
-```bash
-# Create and apply a migration
-npx prisma migrate dev --name describe_change
+- `User`: `deletedAt`
+- `Conversation`: `ownerId`, `deletedAt`, `type`
+- `Message`: `(conversationId, createdAt desc)`, `senderId`, `deletedAt`
+- `Participant`: unique `(userId, conversationId)`, plus `conversationId`
+- `Session`: `userId`, unique `refreshToken`, `expiresAt`
+- `FriendRequest`: unique `(fromUserId, toUserId)`, plus status-related indexes
+- `Friends`: unique `(userId, friendId)`
 
-# Apply to production
-npx prisma migrate deploy
-```
+---
 
-### Seed Data
-Initial system configurations and test users are managed via the seeding script:
-`apps/api/prisma/seed.ts`
+## 🔄 Schema Evolution & Maintenance
+
+- Schema changes are handled by updating model definitions in `apps/api/src/models`.
+- New indexes should be added in model files based on query patterns.
+- Backfill scripts (if required) should be added under `apps/api/src/scripts` and run in controlled environments.
 
 ---
 
