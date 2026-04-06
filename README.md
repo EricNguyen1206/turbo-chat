@@ -23,14 +23,6 @@
 
 ---
 
-## 📸 Screenshots
-
-| Dashboard | Group Creation | Chat View |
-| :---: | :---: | :---: |
-| <img src="./docs/assets/dashboard_main_1771946213444.png" width="300" /> | <img src="./docs/assets/group_creation_modal_1771946554600.png" width="300" /> | <img src="./docs/assets/dashboard_main_1771946213444.png" width="300" /> |
-
----
-
 ## 📄 Project Documentation
 
 Detailed documentation for architecture and features is maintained in the `_docs/` directory.
