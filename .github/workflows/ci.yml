@@ -57,8 +57,5 @@ jobs:
           pnpm --filter @raven/validators build
           pnpm --filter @raven/shared build
 
-      - name: Generate Prisma client
-        run: pnpm --dir apps/api exec prisma generate
-
       - name: Test backend
         run: pnpm --filter @raven/api test

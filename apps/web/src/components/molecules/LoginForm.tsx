@@ -9,7 +9,6 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Loader2 } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
-import GithubLoginButton from "../atoms/GithubLoginButton";
 
 const LoginForm = () => {
   const [hasError, setHasError] = useState(false);
@@ -151,31 +150,15 @@ const LoginForm = () => {
           </div>
         </div>
 
-          <div className="flex justify-center">
-            <GoogleLogin
-              onSuccess={async (credentialResponse) => {
-                if (credentialResponse.credential) {
-                  try {
-                    await authService.googleSignIn(credentialResponse.credential);
-                    await getProfile();
-                    queryClient.invalidateQueries({ queryKey: ["user", "current"] });
-                    toast.success("Sign in successfully");
-                    navigate(from, { replace: true });
-                  } catch (error) {
-                    console.error('Google Sign In Failed', error);
-                    toast.error("Google Sign In Failed");
-                  }
-                }
-              }}
-              onError={() => {
-                toast.error("Google Sign In Failed");
-              }}
-              useOneTap
-              theme="filled_black"
-              shape="pill"
-            />
-          </div>
-        </form>
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full h-11 text-sm font-light tracking-wide rounded-lg"
+          onClick={handleGoogleLogin}
+          disabled={isLoading}
+        >
+          Continue with Google
+        </Button>
       </CardContent>
 
       <CardFooter className="flex justify-center pt-6">

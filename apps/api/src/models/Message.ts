@@ -11,7 +11,6 @@ export interface IMessage extends Document {
   updatedAt: Date;
   deletedAt?: Date | null;
   id: string;
-  tokenCount?: number;
   isArchived?: boolean;
 }
 
@@ -23,7 +22,6 @@ const MessageSchema: Schema<IMessage> = new Schema(
     url: { type: String },
     fileName: { type: String },
     deletedAt: { type: Date, default: null },
-    tokenCount: { type: Number, default: 0 },
     isArchived: { type: Boolean, default: false },
   },
   {

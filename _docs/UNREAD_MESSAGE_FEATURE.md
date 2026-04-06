@@ -1,18 +1,19 @@
 # Unread Message Count & Read Status Flow
 
-> **Last Updated:** 2026-02-23
+> **Last Updated:** 2026-04-06
 > **Feature:** Real-time Unread Counts
-> **Components:** WebSocket, API, PostgreSQL (Prisma)
+> **Components:** WebSocket, API, MongoDB (Mongoose)
 > **Status:** Implemented
 
-This document details the architecture and implementation of the real-time unread message tracking and "mark as read" feature.
+This document explains how unread counts and read status updates work in real time.
 
 ## Overview
 
-The system ensures that users stay informed about new messages even when they are not actively viewing a conversation.
-1.  **DB Persistence:** Unread states are tracked per participant in PostgreSQL.
-2.  **Real-time Updates:** Socket events are sent to all online participants when a new message arrives.
-3.  **Automatic Marking:** Conversations are marked as read when a user opens them.
+The system keeps unread state accurate even when users are offline.
+
+1. **DB Persistence:** Unread state is stored per participant in MongoDB (`Participant.unreadCount`, `lastReadAt`).
+2. **Real-time Updates:** Socket events are pushed to online participants when new messages are created.
+3. **Automatic Marking:** Conversations are marked read when users open/read the conversation.
 
 ## Real-time Unread Count Flow
 
@@ -22,22 +23,22 @@ When User A sends a message to User B:
 sequenceDiagram
     participant Sender as User A (Frontend)
     participant Server as Backend API
-    participant DB as PostgreSQL (Prisma)
+    participant DB as MongoDB (Mongoose)
     participant Receiver as User B (Frontend)
 
     Sender->>Server: POST /messages
     Server->>DB: Save Message
-    Server->>DB: Upsert Participant Unread State
-    
-    Note over Server: Broadcast
-    Server->>Receiver: Emit NEW_MESSAGE (Global)
+    Server->>DB: Increment unreadCount for other participants
 
-    alt User B is viewing Chat
+    Note over Server: Broadcast
+    Server->>Receiver: Emit NEW_MESSAGE
+
+    alt User B is viewing conversation
         Receiver->>Server: POST /conversations/:id/read
-        Server->>DB: Reset Unread Count for User B
+        Server->>DB: Reset unreadCount and update lastReadAt
     else User B is elsewhere
         Receiver->>Receiver: localUnreadCount += 1
-        Receiver->>Receiver: Update Unread Badge in Sidebar
+        Receiver->>Receiver: Update unread badge
     end
 ```
 
@@ -50,7 +51,7 @@ Base Route: `/api/v1/conversations`
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/:id/read` | `POST` | Mark conversation as read |
-| `/unread-count` | `GET` | Get total unread count across all chats |
+| `/unread-count` | `GET` | Get total unread count across conversations |
 
 ## Related Documentation
 

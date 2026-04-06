@@ -4,8 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Claude Theme - Light Mode (Warm, Approachable, Intelligent) */
-  /* Inspired by Claude AI's design from tweakcn.com */
+  /* Warm light theme */
   /* Primary: Terracotta Orange #EC8E61 | Background: Warm Cream #FDF8ED */
 
   --background: #FDF8ED;
@@ -18,7 +17,7 @@
   --popover: #FFFEF9;
   --popover-foreground: #2C2416;
   --primary: #EC8E61;
-  /* Terracotta orange - Claude signature */
+  /* Terracotta orange */
   --primary-foreground: #FFFEF9;
   --secondary: #F4E8DC;
   /* Light terracotta tint */
@@ -328,9 +327,4 @@ body {
     padding: max(env(safe-area-inset-top), 16px) max(env(safe-area-inset-right), 16px) max(env(safe-area-inset-bottom), 16px) max(env(safe-area-inset-left), 16px);
   }
 
-  @media (hover: none) {
-    .hover\\:opacity-hover:hover {
-      opacity: 1;
-    }
-  }
 }
