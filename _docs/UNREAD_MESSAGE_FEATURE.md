@@ -1,18 +1,18 @@
 # Unread Message Count & Read Status Flow
 
-> **Last Updated:** 2026-01-04
+> **Last Updated:** 2026-02-23
 > **Feature:** Real-time Unread Counts
-> **Components:** WebSocket, API, Store, UI components
+> **Components:** WebSocket, API, PostgreSQL (Prisma)
 > **Status:** Implemented
 
-This document details the architecture and implementation of the real-time unread message count and "mark as read" feature in the Erion Raven chat application.
+This document details the architecture and implementation of the real-time unread message tracking and "mark as read" feature.
 
 ## Overview
 
-The system ensures that users receive real-time updates for unread message counts even when they are not actively viewing the conversation. It handles:
-1.  **Real-time increments** when a new message is received.
-2.  **Real-time decrements/clearing** when a user reads a conversation.
-3.  **Persistence** in MongoDB.
+The system ensures that users stay informed about new messages even when they are not actively viewing a conversation.
+1.  **DB Persistence:** Unread states are tracked per participant in PostgreSQL.
+2.  **Real-time Updates:** Socket events are sent to all online participants when a new message arrives.
+3.  **Automatic Marking:** Conversations are marked as read when a user opens them.
 
 ## Real-time Unread Count Flow
 
@@ -22,97 +22,37 @@ When User A sends a message to User B:
 sequenceDiagram
     participant Sender as User A (Frontend)
     participant Server as Backend API
-    participant DB as MongoDB
-    participant Socket as Active Socket Room
+    participant DB as PostgreSQL (Prisma)
     participant Receiver as User B (Frontend)
 
-    Sender->>Server: POST /messages (or Socket emit)
+    Sender->>Server: POST /messages
     Server->>DB: Save Message
-    Server->>DB: Increment unreadCount for Participants (User B)
+    Server->>DB: Upsert Participant Unread State
     
-    note over Server: Broadcast Logic
-    Server->>Socket: Emit NEW_MESSAGE to conversation room
-    
-    loop For each online participant
-        Server->>Receiver: Emit NEW_MESSAGE to User B (Global Event)
-    end
+    Note over Server: Broadcast
+    Server->>Receiver: Emit NEW_MESSAGE (Global)
 
-    Receiver->>Receiver: Global Listener (useGlobalWebSocket)
-    Receiver->>Receiver: Store Check (useConversationStore)
-    alt User B is in Chat with A
-        Receiver->>DB: Mark as Read (API Call)
-        Receiver->>Receiver: No Unread Increment
+    alt User B is viewing Chat
+        Receiver->>Server: POST /conversations/:id/read
+        Server->>DB: Reset Unread Count for User B
     else User B is elsewhere
         Receiver->>Receiver: localUnreadCount += 1
-        Receiver->>Receiver: Update Sidebar Badge
+        Receiver->>Receiver: Update Unread Badge in Sidebar
     end
 ```
 
-### Key Components
+## API Endpoints
 
-| Component | Responsibility |
-| :--- | :--- |
-| `WebSocketService` (Backend) | Iterates all conversation participants and sends `NEW_MESSAGE` to connected clients, ensuring delivery even if the room isn't joined. |
-| `Participant` (DB Model) | Stores `unreadCount` and `lastReadAt` for each user-conversation pair. |
-| `useGlobalWebSocket` (Frontend) | Listens for `chat-message` events globally (in `AppSidebar`). |
-| `useConversationStore` (Frontend) | Manages client-side unread counts and handles logic to increment only if the chat isn't active. |
+### Unread Management
 
-## Code Implementation
+Base Route: `/api/v1/conversations`
 
-### Backend: Broadcasting
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/:id/read` | `POST` | Mark conversation as read |
+| `/unread-count` | `GET` | Get total unread count across all chats |
 
-**File:** `apps/api/src/services/websocket.service.ts`
+## Related Documentation
 
-```typescript
-// Increment unread count in DB
-await Participant.updateMany(
-  { conversationId, userId: { $ne: senderId } },
-  { $inc: { unreadCount: 1 } }
-);
-
-// Get all participants
-const participants = await Participant.find({ conversationId }).select('userId');
-
-// Broadcast to all online participants
-for (const participant of participants) {
-  if (this.isOnline(participant.userId)) {
-     this.emitToUser(participant.userId, SocketEvent.NEW_MESSAGE, messageDto);
-  }
-}
-```
-
-### Frontend: Global State Handling
-
-**File:** `apps/web/src/store/useConversationStore.ts`
-
-```typescript
-handleNewMessage: (message) => {
-  const state = get();
-  const { conversationId } = message;
-
-  // Only increment if we are NOT viewing this conversation
-  if (conversationId !== state.currentConversation?.id) {
-    const currentCount = state.unreadCounts[conversationId] || 0;
-    set((s) => ({
-      unreadCounts: {
-        ...s.unreadCounts,
-        [conversationId]: currentCount + 1
-      }
-    }));
-  }
-}
-```
-
-### Frontend: Automated Mark as Read
-
-**File:** `apps/web/src/hooks/useWebSocketMessageHandler.tsx`
-
-```typescript
-if (conversationId && String(chatMessage.conversationId) === String(conversationId)) {
-  // Add message to chat store
-  upsertMessageToConversation(String(conversationId), message);
-  
-  // Mark as read immediately since user is viewing this conversation
-  markAsRead(String(conversationId));
-}
-```
+- **[Database Design](./DATABASE_DESIGN.md)**
+- **[Chat Realtime Feature](./CHAT_REALTIME_FEATURE.md)**
