@@ -5,14 +5,14 @@
 #
 # GCP Config:
 #   Project:    nanobot-487408
-#   Region:     asia-southeast1
+#   Region:     asia-southeast3 (Bangkok - Tier 1)
 #   Registry:   asia-southeast1-docker.pkg.dev/nanobot-487408/erion-repo
 #   Service:    api-service
 # ============================================================
 
 substitutions:
   _CLOUD_RUN_SERVICE: 'api-service'
-  _CLOUD_RUN_REGION: 'asia-southeast1'
+  _CLOUD_RUN_REGION: 'asia-southeast3'
   _IMAGE: 'asia-southeast1-docker.pkg.dev/nanobot-487408/erion-repo/api'
 
 steps:

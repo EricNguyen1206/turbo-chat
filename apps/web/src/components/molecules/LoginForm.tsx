@@ -54,6 +54,11 @@ const LoginForm = () => {
     }
   };
 
+  const handleGoogleLogin = () => {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1';
+    window.location.href = `${apiUrl}/auth/google`;
+  };
+
   const isLoading = signinMutation.isPending;
 
   const inputErrorClass = hasError
@@ -146,7 +151,16 @@ const LoginForm = () => {
           </div>
         </div>
 
-        <div className="flex justify-center">
+        <div className="flex flex-col gap-3 justify-center">
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full h-11 text-sm font-light tracking-wide rounded-lg"
+            onClick={handleGoogleLogin}
+            disabled={isLoading}
+          >
+            Continue with Google
+          </Button>
           <GithubLoginButton />
         </div>
       </CardContent>

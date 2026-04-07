@@ -4,12 +4,21 @@ import { MessageService } from '../services/message.service';
 import { ConversationService } from '../services/conversation.service';
 import { SocketEvent, ConversationType } from '@raven/types';
 import { Socket } from 'socket.io';
+import { Participant } from '../models/Participant';
 
 // Mock dependencies
 jest.mock('../services/redis.service');
 jest.mock('../services/message.service');
 jest.mock('../services/conversation.service');
 jest.mock('@/utils/logger');
+jest.mock('../models/Participant', () => ({
+  Participant: {
+    updateMany: jest.fn().mockResolvedValue({}),
+    find: jest.fn().mockReturnValue({
+      select: jest.fn().mockResolvedValue([{ userId: '507f191e810c19729de860ea' }]),
+    }),
+  },
+}));
 
 describe('Chat Flow 1-1', () => {
   let webSocketService: WebSocketService;
@@ -34,9 +43,9 @@ describe('Chat Flow 1-1', () => {
   });
 
   it('should allow user to connect, join room and send message', async () => {
-    const userId = 'user123';
+    const userId = '507f191e810c19729de860ea';
     const username = 'testuser';
-    const conversationId = 'conv456';
+    const conversationId = '507f191e810c19729de860eb';
     const messageText = 'Hello 1-1';
 
     // 1. Mock Socket
@@ -82,6 +91,8 @@ describe('Chat Flow 1-1', () => {
       conversationId: conversationId,
       text: messageText
     });
+
+    expect(Participant.updateMany).toHaveBeenCalled();
 
     // Broadcast to room (including sender in this implementation)
     expect(mockSocket.emit).toHaveBeenCalledWith(SocketEvent.NEW_MESSAGE, expect.objectContaining({

@@ -1,65 +1,64 @@
 # Real-time Chat Feature Flow
 
-> **Last Updated:** 2026-02-23
-> **Feature:** Real-time Messaging (Standard & AI)
-> **Components:** WebSocket, Redis, PostgreSQL (Prisma), API
+> **Last Updated:** 2026-04-06
+> **Feature:** Real-time Messaging
+> **Components:** WebSocket, Redis, MongoDB (Mongoose), API
 > **Status:** Implemented
 
-This document details the architecture and implementation of the real-time chat features, including traditional messaging and AI-powered interactions.
+This document describes the architecture of real-time chat features for user-to-user and group messaging.
 
 ## Overview
 
-The real-time chat system is built on **Socket.IO** for bidirectional communication. It uses **Redis** for presence tracking and **PostgreSQL (via Prisma)** for persistent message storage and participant state management.
+The real-time chat system is built on **Socket.IO** for bidirectional communication. It uses **Redis** for online status and room-presence state, while **MongoDB (via Mongoose)** stores persistent messages and participant unread counters.
 
 ## Architecture & Data Flow
 
 ### 1. Message Sending Flow
-
-The flow ensures that all participants in a conversation receive the message in real-time if they are online.
 
 ```mermaid
 sequenceDiagram
     participant Sender as User A (Frontend)
     participant Server as Backend API (WebSocketService)
     participant Redis as Redis Presence
-    participant DB as PostgreSQL (Prisma)
+    participant DB as MongoDB (Mongoose)
     participant Recipient as User B (Frontend)
 
     Note over Sender, Recipient: 1. Sending Message
-    Sender->>Server: Emit SEND_MESSAGE (conversationId, text)
-    Server->>DB: Save Message & Update Conversation
-    
+    Sender->>Server: Emit SEND_MESSAGE (conversationId, text/url/file)
+    Server->>DB: Save Message
+    Server->>DB: Increment unreadCount for non-sender participants
+
     Note over Server: 2. Broadcasting
-    Server->>DB: Fetch Conversation Participants
+    Server->>DB: Fetch conversation participants
     loop For each participant
-        Server->>Redis: isUserOnline(userId)?
-        alt User is Online
-            Server->>Recipient: Emit NEW_MESSAGE event
-        else User is Offline
-            Note right of Server: Only DB unread state persists
+        Server->>Redis: Check online status
+        alt User is online
+            Server->>Recipient: Emit NEW_MESSAGE
+        else User is offline
+            Note right of Server: Unread state stays in DB
         end
     end
 
     Note over Recipient: 3. Receiving
-    Recipient->>Recipient: Append Message to store
-    Recipient->>Recipient: Notify UI (Sound/Badge)
+    Recipient->>Recipient: Append message in store
+    Recipient->>Recipient: Update unread badge/sound/UI
 ```
 
 ## Redis Global State
 
-Redis tracks which users are currently "active" and which "rooms" (conversations) they are viewing.
+Redis tracks active users and conversation room memberships.
 
 | Key Pattern | Data Type | Purpose |
 | :--- | :--- | :--- |
 | `online_users:{userId}` | String | Presence flag with timestamp |
-| `user_rooms:{userId}` | Set | List of IDs the user is currently looking at |
+| `user_rooms:{userId}` | Set | Conversations currently joined by the user |
 
 ### Shared State Operations
 
-- **On Connect:** `SET online_users:{userId} {ISO_DATE}`
-- **On Disconnect:** `DEL online_users:{userId}`
-- **On Room Join:** `SADD user_rooms:{userId} {conversationId}`
-- **On Room Leave:** `SREM user_rooms:{userId} {conversationId}`
+- On connect: `SET online_users:{userId} {ISO_DATE}`
+- On disconnect: `DEL online_users:{userId}`
+- On room join: `SADD user_rooms:{userId} {conversationId}`
+- On room leave: `SREM user_rooms:{userId} {conversationId}`
 
 ---
 
@@ -71,9 +70,9 @@ Base Route: `/api/v1/messages`
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/` | `POST` | Send message (User or AI) |
-| `/conversation/:id` | `GET` | Get message history (Paginated) |
-| `/:id` | `DELETE` | Soft delete a message |
+| `/` | `POST` | Send message |
+| `/conversation/:id` | `GET` | Get paginated message history |
+| `/:id` | `DELETE` | Soft-delete a message |
 
 ### WebSocket Management
 
@@ -81,34 +80,29 @@ Base Route: `/api/v1/ws`
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/stats` | `GET` | System-wide socket stats |
-| `/users` | `GET` | List all connected user IDs |
+| `/stats` | `GET` | WebSocket system stats |
+| `/users` | `GET` | List connected user IDs |
 
 ---
 
-## Code Examples
-
-### Backend: Broadcasting Message
+## Code Example
 
 **File:** `apps/api/src/services/websocket.service.ts`
 
 ```typescript
-// Core broadcasting logic
-async handleSendMessage(senderId: string, payload: any) {
-  // 1. Persist via Prisma
-  const message = await this.messageService.createMessage(senderId, payload);
-  
-  // 2. Fetch recipients
-  const participants = await this.prisma.conversation.findUnique({
-    where: { id: payload.conversationId },
-    select: { participants: true }
-  });
+const savedMessage = await this.messageService.createMessage(senderId, messageData);
 
-  // 3. Emit to online participants
-  for (const part of participants) {
-    if (await this.presenceService.isOnline(part.userId)) {
-      this.io.to(part.userId).emit('new_message', message);
-    }
+await Participant.updateMany(
+  { conversationId, userId: { $ne: senderId }, deletedAt: null },
+  { $inc: { unreadCount: 1 } }
+);
+
+const participants = await Participant.find({ conversationId, deletedAt: null }).select('userId');
+
+for (const participant of participants) {
+  const userId = participant.userId.toString();
+  if (this.isOnline(userId)) {
+    this.emitToUser(userId, SocketEvent.NEW_MESSAGE, messageDto);
   }
 }
 ```
@@ -117,4 +111,4 @@ async handleSendMessage(senderId: string, payload: any) {
 
 - **[Unread Message Feature](./UNREAD_MESSAGE_FEATURE.md)**
 - **[Database Design](./DATABASE_DESIGN.md)**
-- **[AI Features](./CONVERSATION_FEATURE.md)**
+- **[Relationship Feature](./RELATIONSHIP_FEATURE.md)**

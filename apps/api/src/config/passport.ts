@@ -3,7 +3,6 @@ import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { Strategy as GithubStrategy } from 'passport-github2';
 import { AuthService } from '../services/auth.service';
 import { config } from './config';
-import { googleConfig } from './google';
 import { logger } from '@/utils/logger';
 
 const authService = new AuthService();
@@ -11,12 +10,16 @@ const authService = new AuthService();
 // Ensure base URL is correctly formed
 const apiBaseUrl = process.env['API_BASE_URL'] ?? `http://localhost:${config.app.port}`;
 
-if (googleConfig.clientId && googleConfig.clientSecret) {
+// Only register Google OAuth strategy if credentials are provided
+const googleClientId = process.env['GOOGLE_CLIENT_ID'];
+const googleClientSecret = process.env['GOOGLE_CLIENT_SECRET'];
+
+if (googleClientId && googleClientSecret) {
   passport.use(
     new GoogleStrategy(
       {
-        clientID: googleConfig.clientId,
-        clientSecret: googleConfig.clientSecret,
+        clientID: googleClientId,
+        clientSecret: googleClientSecret,
         callbackURL: `${apiBaseUrl}/api/v1/auth/google/callback`,
       },
       async (_accessToken, _refreshToken, profile, done) => {
@@ -43,10 +46,12 @@ if (googleConfig.clientId && googleConfig.clientSecret) {
       }
     )
   );
+  logger.info('✅ Google OAuth strategy registered');
 } else {
-  logger.warn('Google OAuth is disabled: missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET');
+  logger.warn('⚠️  GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET not set — Google OAuth disabled');
 }
 
+// Only register GitHub OAuth strategy if credentials are provided
 const githubClientId = process.env['GITHUB_CLIENT_ID'];
 const githubClientSecret = process.env['GITHUB_CLIENT_SECRET'];
 
@@ -85,8 +90,9 @@ if (githubClientId && githubClientSecret) {
       }
     )
   );
+  logger.info('✅ GitHub OAuth strategy registered');
 } else {
-  logger.warn('GitHub OAuth is disabled: missing GITHUB_CLIENT_ID or GITHUB_CLIENT_SECRET');
+  logger.warn('⚠️  GITHUB_CLIENT_ID or GITHUB_CLIENT_SECRET not set — GitHub OAuth disabled');
 }
 
 export default passport;

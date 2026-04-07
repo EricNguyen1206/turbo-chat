@@ -103,8 +103,8 @@ ENV PORT=8080
 ENV HOST=0.0.0.0
 
 # Health check - use root endpoint which returns status
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/ || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health/live || exit 1
 
 # Start the application
 CMD ["node", "dist/index.js"]

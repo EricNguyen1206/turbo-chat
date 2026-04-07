@@ -63,13 +63,6 @@ Add these secrets in GitHub repository settings (Settings → Secrets and variab
    - Get from: Your Render service → Settings → Info
    - Copy the "Service ID"
 
-### For AI PR Review (Ollama)
-
-1. **`OLLAMA_API_KEY`**
-   - Get from: [Ollama Settings → API Keys](https://ollama.com/settings/keys)
-   - Create a new API key
-   - Required for automated PR code review
-
 ## Setup Instructions
 
 ### Step 1: Add Secrets to GitHub
@@ -201,4 +194,3 @@ Add Slack/Discord notifications:
 - [Vercel GitHub Integration](https://vercel.com/docs/concepts/git)
 - [Render GitHub Integration](https://render.com/docs/github)
 - [PNPM Workspace Documentation](https://pnpm.io/workspaces)
-

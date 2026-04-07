@@ -29,6 +29,7 @@ class App {
   public server: any;
   public io: SocketIOServer;
   private wsController?: WebSocketController;
+  private isReady = false;
 
   constructor() {
     this.app = express();
@@ -79,12 +80,27 @@ class App {
     // Initialize Passport
     this.app.use(passport.initialize());
 
+    // Health check endpoint - always respond quickly for Cloud Run
     this.app.get('/', (_req, res) => {
       res.status(200).json({
-        status: 'ok',
+        status: this.isReady ? 'ok' : 'starting',
         timestamp: new Date().toISOString(),
         uptime: process.uptime(),
       });
+    });
+
+    // Liveness probe - always returns 200 so Cloud Run knows container is alive
+    this.app.get('/health/live', (_req, res) => {
+      res.status(200).json({ status: 'alive' });
+    });
+
+    // Readiness probe - returns 503 until DB/Redis are connected
+    this.app.get('/health/ready', (_req, res) => {
+      if (this.isReady) {
+        res.status(200).json({ status: 'ready' });
+      } else {
+        res.status(503).json({ status: 'not ready' });
+      }
     });
   }
 
@@ -117,26 +133,43 @@ class App {
   }
 
   public async start(): Promise<void> {
-    try {
-      // Initialize database
-      await initializeDatabase();
+    const port = config.app.port;
+    const host = config.app.host;
 
-      // Initialize Redis
-      await initializeRedis();
-
-      // Start server
-      this.server.listen(config.app.port, config.app.host, () => {
-        logger.info(`🚀 Server running on http://${config.app.host}:${config.app.port}`);
+    // CRITICAL for Cloud Run: Listen on port FIRST before connecting to dependencies
+    // Cloud Run will kill the container if port is not bound within startup timeout
+    await new Promise<void>((resolve) => {
+      this.server.listen(port, host, () => {
+        logger.info(`🚀 Server listening on http://${host}:${port}`);
         logger.info(`📊 Environment: ${config.app.env}`);
         logger.info(`🔗 WebSocket enabled`);
+        resolve();
       });
+    });
 
-      // Graceful shutdown
-      this.setupGracefulShutdown();
+    // Connect to dependencies AFTER port is bound
+    logger.info('🔄 Connecting to dependencies...');
+    try {
+      await initializeDatabase();
+      logger.info('✅ MongoDB connected');
     } catch (error) {
-      logger.error('Failed to start server:', error);
-      process.exit(1);
+      logger.error('❌ MongoDB connection failed (server still running):', error);
+      // Don't exit - server is already listening. Requests will fail gracefully.
     }
+
+    try {
+      await initializeRedis();
+      logger.info('✅ Redis connected');
+    } catch (error) {
+      logger.error('❌ Redis connection failed (server still running):', error);
+      // Don't exit - server is already listening. Requests will fail gracefully.
+    }
+
+    this.isReady = true;
+    logger.info('🎉 Application fully ready');
+
+    // Graceful shutdown
+    this.setupGracefulShutdown();
   }
 
   private setupGracefulShutdown(): void {
