@@ -9,6 +9,7 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Loader2 } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
+import GithubLoginButton from "../atoms/GithubLoginButton";
 
 const LoginForm = () => {
   const [hasError, setHasError] = useState(false);
@@ -150,15 +151,18 @@ const LoginForm = () => {
           </div>
         </div>
 
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full h-11 text-sm font-light tracking-wide rounded-lg"
-          onClick={handleGoogleLogin}
-          disabled={isLoading}
-        >
-          Continue with Google
-        </Button>
+        <div className="flex flex-col gap-3 justify-center">
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full h-11 text-sm font-light tracking-wide rounded-lg"
+            onClick={handleGoogleLogin}
+            disabled={isLoading}
+          >
+            Continue with Google
+          </Button>
+          <GithubLoginButton />
+        </div>
       </CardContent>
 
       <CardFooter className="flex justify-center pt-6">
@@ -169,7 +173,7 @@ const LoginForm = () => {
           </Link>
         </p>
       </CardFooter>
-    </Card >
+    </Card>
   );
 };
 
