@@ -1,6 +1,0 @@
-{
-  "buildCommand": "cd ../.. && pnpm build --filter=@raven/web...",
-  "outputDirectory": "dist",
-  "installCommand": "cd ../.. && pnpm install",
-  "framework": "vite"
-}
