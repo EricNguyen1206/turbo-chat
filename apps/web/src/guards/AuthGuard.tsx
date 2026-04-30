@@ -1,30 +1,37 @@
 /**
  * Auth Guard
- * 
+ *
  * Protects routes that require authentication.
  * Uses the auth store to check if user is authenticated.
- * On first load, attempts to verify session with the server.
+ * Starts a session monitor to keep the session alive.
  */
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/useAuthStore';
 
 export function AuthGuard() {
   const location = useLocation();
-  const { isAuthenticated, loading, user, checkAuth, hasCheckedAuth } = useAuthStore();
+  const { isAuthenticated, loading, user, checkAuth, startSessionMonitor } = useAuthStore();
+  const cleanupRef = useRef<(() => void) | null>(null);
 
-  // Check auth on mount (only runs once due to hasCheckedAuth guard in store)
   useEffect(() => {
-    console.log('AuthGuard: hasCheckedAuth', hasCheckedAuth);
-    console.log('AuthGuard: loading', loading);
-    if (!hasCheckedAuth && !loading) {
+    if (!isAuthenticated && !loading) {
       checkAuth();
     }
-  }, [hasCheckedAuth, loading]);
+  }, []);
 
-  // Show loading state while checking auth
-  if (loading || !hasCheckedAuth) {
+  useEffect(() => {
+    if (isAuthenticated && !cleanupRef.current) {
+      cleanupRef.current = startSessionMonitor();
+    }
+    return () => {
+      cleanupRef.current?.();
+      cleanupRef.current = null;
+    };
+  }, [isAuthenticated, startSessionMonitor]);
+
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -32,7 +39,6 @@ export function AuthGuard() {
     );
   }
 
-  // Not authenticated, redirect to login
   if (!isAuthenticated || !user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }

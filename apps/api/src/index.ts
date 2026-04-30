@@ -23,6 +23,7 @@ import { WebSocketController } from '@/controllers/websocket.controller';
 import { logger } from '@/utils/logger';
 import { socketAuthMiddleware } from './middleware/socketAuth.middleware';
 import passport from '@/config/passport';
+import { startSessionCleanupSchedule } from '@/jobs/sessionCleanup';
 
 class App {
   public app: express.Application;
@@ -167,6 +168,9 @@ class App {
 
     this.isReady = true;
     logger.info('🎉 Application fully ready');
+
+    // Start expired session cleanup
+    startSessionCleanupSchedule();
 
     // Graceful shutdown
     this.setupGracefulShutdown();

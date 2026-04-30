@@ -54,4 +54,12 @@ export const authService = {
     const res = await apiClient.post<ApiResponse<string>>('/auth/refresh');
     return res.data;
   },
+
+  /**
+   * Lightweight session check — faster than getProfile
+   */
+  checkSession: async (): Promise<ApiResponse<UserDto>> => {
+    const res = await apiClient.get<ApiResponse<UserDto>>('/auth/me');
+    return res.data;
+  },
 };

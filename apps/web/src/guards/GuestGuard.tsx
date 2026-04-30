@@ -10,17 +10,15 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { useAuthStore } from '@/store/useAuthStore';
 
 export function GuestGuard() {
-  const { isAuthenticated, loading, checkAuth, user, hasCheckedAuth } = useAuthStore();
+  const { isAuthenticated, loading, checkAuth, user } = useAuthStore();
 
-  // Check auth on mount (only runs once due to hasCheckedAuth guard in store)
   useEffect(() => {
-    if (!hasCheckedAuth && !loading) {
+    if (!isAuthenticated && !loading) {
       checkAuth();
     }
-  }, [hasCheckedAuth, loading, checkAuth]);
+  }, []);
 
-  // Show loading state while checking auth
-  if (loading || !hasCheckedAuth) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>

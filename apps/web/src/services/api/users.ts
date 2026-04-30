@@ -38,15 +38,14 @@ export const useCurrentUserQuery = (
   options?: Omit<UseQueryOptions<UserDto, AxiosError<ApiErrorResponse>>, 'queryKey' | 'queryFn'>
 ): UseQueryResult<UserDto, AxiosError<ApiErrorResponse>> => {
   // Only run this query if user is authenticated
-  const { isAuthenticated, hasCheckedAuth } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
 
   return useQuery<UserDto, AxiosError<ApiErrorResponse>>({
     queryKey: ['user', 'current'],
     queryFn: getCurrentUser,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes garbage collection
-    // Only run if authenticated (prevents calls when not logged in)
-    enabled: hasCheckedAuth && isAuthenticated && (options?.enabled !== false),
+    enabled: isAuthenticated && (options?.enabled !== false),
     retry: (failureCount, error) => {
       // Don't retry on auth errors (401, 403, 404)
       const status = error.response?.status;

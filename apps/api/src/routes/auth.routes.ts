@@ -37,6 +37,9 @@ router.get(
 // POST /api/v1/auth/refresh
 router.post('/refresh', authController.refresh.bind(authController));
 
+// GET /api/v1/auth/me
+router.get('/me', authenticateToken, authController.me.bind(authController));
+
 // POST /api/v1/auth/signout
 router.post('/signout', authenticateToken, authController.signout.bind(authController));
 

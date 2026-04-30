@@ -58,13 +58,13 @@ const declineFriendRequest = async (requestId: string): Promise<void> => {
 export const useFriendsQuery = (
   options?: Omit<UseQueryOptions<FriendDto[], AxiosError<ApiErrorResponse>>, 'queryKey' | 'queryFn'>
 ): UseQueryResult<FriendDto[], AxiosError<ApiErrorResponse>> => {
-  const { isAuthenticated, hasCheckedAuth } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
 
   return useQuery<FriendDto[], AxiosError<ApiErrorResponse>>({
     queryKey: ['friends'],
     queryFn: getFriends,
     staleTime: 30_000, // 30 seconds
-    enabled: hasCheckedAuth && isAuthenticated && (options?.enabled !== false),
+    enabled: isAuthenticated && (options?.enabled !== false),
     ...options,
   });
 };
@@ -75,13 +75,13 @@ export const useFriendRequestsQuery = (
     'queryKey' | 'queryFn'
   >
 ): UseQueryResult<FriendRequestsResponse, AxiosError<ApiErrorResponse>> => {
-  const { isAuthenticated, hasCheckedAuth } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
 
   return useQuery<FriendRequestsResponse, AxiosError<ApiErrorResponse>>({
     queryKey: ['friends', 'requests'],
     queryFn: getFriendRequests,
     staleTime: 30_000, // 30 seconds
-    enabled: hasCheckedAuth && isAuthenticated && (options?.enabled !== false),
+    enabled: isAuthenticated && (options?.enabled !== false),
     ...options,
   });
 };

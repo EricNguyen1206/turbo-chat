@@ -1,12 +1,30 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
+import { Request } from "express";
 import { User, IUser } from "@/models/User";
 import { Session } from "@/models/Session";
 import { config } from "@/config/config";
 import { SignupRequestDto, SigninRequestDto } from "@raven/validators";
 import { UserDto } from "@raven/types";
 import { logger } from "@/utils/logger";
+
+export function createFingerprint(req: Request): string {
+  const ua = req.headers["user-agent"] || "";
+  return crypto.createHash("sha256").update(ua).digest("hex");
+}
+
+function parseRefreshExpireDays(): number {
+  const d = config.jwt.refreshExpire;
+  const match = d.match(/^(\d+)([smhd])$/);
+  if (!match) return 30;
+  const n = parseInt(match[1]!);
+  const unit = match[2]!;
+  if (unit === "d") return n;
+  if (unit === "h") return n / 24;
+  if (unit === "m") return n / 1440;
+  return n / 86400;
+}
 
 export interface OAuthProfile {
   provider: 'google' | 'github';
@@ -58,16 +76,14 @@ export class AuthService {
 
   public async signin(
     data: SigninRequestDto
-  ): Promise<{ user: UserDto; accessToken: string; refreshToken: string }> {
+  ): Promise<{ user: UserDto; userEntity: IUser }> {
     try {
-      // Find user by email
       const user = await User.findOne({ email: data.email });
 
       if (!user) {
         throw new Error("Invalid credentials");
       }
 
-      // Verify password
       if (!user.password) {
         throw new Error("Invalid credentials");
       }
@@ -75,8 +91,6 @@ export class AuthService {
       if (!isPasswordValid) {
         throw new Error("Invalid credentials");
       }
-
-      const { accessToken, refreshToken } = await this.createTokens(user);
 
       logger.info("User signed in successfully", { userId: user.id, email: user.email });
 
@@ -90,49 +104,70 @@ export class AuthService {
         userResponse.avatar = user.avatar;
       }
 
-      return {
-        user: userResponse,
-        accessToken,
-        refreshToken,
-      };
+      return { user: userResponse, userEntity: user };
     } catch (error) {
       logger.error("Signin error:", error);
       throw error;
     }
   }
 
-  public async refreshToken(refreshToken: string): Promise<{ accessToken: string }> {
+  public async refreshToken(
+    oldRefreshToken: string,
+    fingerprint: string
+  ): Promise<{ accessToken: string; refreshToken: string }> {
     try {
-      // Find session by refresh token
-      const session = await Session.findOne({ refreshToken }).populate<{ user: IUser }>("userId");
+      const session = await Session.findOne({ refreshToken: oldRefreshToken }).populate<{
+        userId: IUser;
+      }>("userId");
 
       if (!session) {
         throw new Error("Invalid refresh token");
       }
 
-      // Check if session is expired
       if (session.isExpired()) {
         throw new Error("Refresh token expired");
       }
 
-      // Get user from populated field
       const user = session.userId as unknown as IUser;
       if (!user) {
         throw new Error("User not found");
       }
 
-      // Generate new access token
+      // Validate fingerprint if enabled and stored
+      if (config.session.fingerprintEnabled && session.fingerprint) {
+        if (session.fingerprint !== fingerprint) {
+          // Possible token theft — invalidate all sessions
+          await Session.deleteMany({ userId: user._id });
+          logger.warn("Session fingerprint mismatch — all sessions invalidated", {
+            userId: user.id,
+          });
+          throw new Error("Session fingerprint mismatch");
+        }
+      }
+
+      // Rotate: delete old session, create new one
+      await Session.deleteOne({ _id: session._id });
+
+      const newRefreshToken = crypto.randomBytes(64).toString("hex");
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + parseRefreshExpireDays());
+
+      await new Session({
+        userId: user._id,
+        refreshToken: newRefreshToken,
+        fingerprint,
+        expiresAt,
+      }).save();
+
       const accessToken = jwt.sign(
         { userId: user.id, email: user.email, username: user.username },
         config.jwt.secret,
-        {
-          expiresIn: config.jwt.accessExpire,
-        } as jwt.SignOptions
+        { expiresIn: config.jwt.accessExpire } as jwt.SignOptions
       );
 
-      logger.info("Access token refreshed", { userId: user.id, sessionId: session.id });
+      logger.info("Tokens rotated", { userId: user.id });
 
-      return { accessToken };
+      return { accessToken, refreshToken: newRefreshToken };
     } catch (error) {
       logger.error("Refresh token error:", error);
       throw error;
@@ -166,7 +201,10 @@ export class AuthService {
     }
   }
 
-  public async createTokens(user: IUser): Promise<{ accessToken: string; refreshToken: string }> {
+  public async createTokens(
+    user: IUser,
+    fingerprint?: string
+  ): Promise<{ accessToken: string; refreshToken: string }> {
     const accessToken = jwt.sign(
       { userId: user.id, email: user.email, username: user.username },
       config.jwt.secret,
@@ -175,11 +213,12 @@ export class AuthService {
 
     const refreshToken = crypto.randomBytes(64).toString("hex");
     const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 30);
+    expiresAt.setDate(expiresAt.getDate() + parseRefreshExpireDays());
 
     const session = new Session({
       userId: user._id,
       refreshToken,
+      fingerprint: fingerprint || undefined,
       expiresAt,
     });
 

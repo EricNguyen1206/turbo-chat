@@ -4,6 +4,7 @@ export interface ISession extends Document {
   _id: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
   refreshToken: string;
+  fingerprint?: string;
   expiresAt: Date;
   createdAt: Date;
   id: string;
@@ -14,6 +15,7 @@ const SessionSchema: Schema<ISession> = new Schema(
   {
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
     refreshToken: { type: String, required: true, unique: true },
+    fingerprint: { type: String },
     expiresAt: { type: Date, required: true, index: true },
   },
   {

@@ -28,8 +28,9 @@ export const config = {
       }
       return secret || "dev-secret-do-not-use-in-prod";
     })(),
-    accessExpire: process.env["JWT_ACCESS_EXPIRE"] || "15m",
+    accessExpire: process.env["JWT_ACCESS_EXPIRE"] || "1h",
     refreshExpire: process.env["JWT_REFRESH_EXPIRE"] || "30d",
+    sessionRenewalThresholdDays: parseInt(process.env["SESSION_RENEWAL_THRESHOLD_DAYS"] || "7", 10),
   },
   cors: {
     origin: process.env["CORS_ORIGIN"]?.split(",") || ["http://localhost:3000", "http://localhost:3001"],
@@ -49,5 +50,12 @@ export const config = {
     secure: process.env["NODE_ENV"] === "production",
     sameSite: (process.env["NODE_ENV"] === "production" ? "none" : "lax") as "none" | "lax" | "strict",
     path: "/",
+    accessMaxAge: parseInt(process.env["COOKIE_ACCESS_MAX_AGE_MS"] || "3600000", 10),
+    refreshMaxAge: parseInt(process.env["COOKIE_REFRESH_MAX_AGE_MS"] || "2592000000", 10),
+  },
+  session: {
+    fingerprintEnabled: process.env["SESSION_FINGERPRINT_ENABLED"] !== "false",
+    slidingEnabled: process.env["SESSION_SLIDING_ENABLED"] !== "false",
+    cleanupIntervalMs: parseInt(process.env["SESSION_CLEANUP_INTERVAL_MS"] || "21600000", 10),
   },
 };

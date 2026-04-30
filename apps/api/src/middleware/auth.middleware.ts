@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { config } from "@/config/config";
 import { User } from "@/models/User";
+import { Session } from "@/models/Session";
 import { logger } from "@/utils/logger";
 
 // AuthenticatedRequest is a convenience alias — req.user and req.userId
@@ -50,6 +51,24 @@ export const authenticateToken = async (
     // Add user to request object (augmented via Express global namespace)
     req.user = user;
     req.userId = user.id;
+
+    // Slide session expiration forward if enabled and nearing expiry
+    if (config.session.slidingEnabled) {
+      try {
+        const latestSession = await Session.findOne({ userId: user._id }).sort({ expiresAt: -1 });
+        if (latestSession && !latestSession.isExpired()) {
+          const daysUntilExpiry =
+            (latestSession.expiresAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24);
+          if (daysUntilExpiry < config.jwt.sessionRenewalThresholdDays) {
+            const refreshDays = parseInt(config.jwt.refreshExpire) || 30;
+            latestSession.expiresAt = new Date(Date.now() + refreshDays * 24 * 60 * 60 * 1000);
+            await latestSession.save();
+          }
+        }
+      } catch {
+        // Non-critical — don't block the request
+      }
+    }
 
     next();
   } catch (error) {

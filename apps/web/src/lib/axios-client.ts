@@ -1,30 +1,35 @@
 /**
  * Centralized Axios Client Configuration
- * 
+ *
  * Security approach:
  * - Uses httpOnly cookies for JWT tokens (set by backend)
  * - No token storage in frontend memory or localStorage
  * - withCredentials: true ensures cookies are sent with requests
  * - Automatic token refresh via httpOnly refresh token cookie
+ * - Resilient: retries refresh once before redirecting to login
  */
 
 import axios, { AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from "axios";
 import { apiUrl, isDev } from "./config";
 
-// API base URL from config
+declare module "axios" {
+  interface InternalAxiosRequestConfig {
+    _retry?: boolean;
+    _refreshRetried?: boolean;
+  }
+}
+
 const API_BASE_URL = apiUrl;
 
-// Create axios instance with secure defaults
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000, // 10 second timeout
-  withCredentials: true, // Send httpOnly cookies with requests
+  timeout: 10000,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Queue for failed requests while refreshing token
 let isRefreshing = false;
 let failedQueue: Array<{
   resolve: (value?: any) => void;
@@ -42,10 +47,8 @@ const processQueue = (error: any, token: string | null = null) => {
   failedQueue = [];
 };
 
-// Request interceptor - cookies are automatically sent, no manual token handling needed
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // Log requests in development
     if (isDev) {
       console.log(`📤 ${config.method?.toUpperCase()} ${config.url}`);
     }
@@ -57,25 +60,21 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Response interceptor for automatic token refresh
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => {
     return response;
   },
   async (error) => {
-    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+    const originalRequest = error.config as InternalAxiosRequestConfig & { _refreshRetried?: boolean };
 
-    // Skip refresh for auth endpoints and profile endpoint to prevent infinite loops
     const isAuthEndpoint = originalRequest.url?.includes('/auth/signin') ||
       originalRequest.url?.includes('/auth/signup') ||
       originalRequest.url?.includes('/auth/refresh') ||
       originalRequest.url?.includes('/auth/signout') ||
-      originalRequest.url?.includes('/users/profile');
+      originalRequest.url?.includes('/auth/me');
 
-    // If error is 401 (Unauthorized) and we haven't tried to refresh yet
     if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
       if (isRefreshing) {
-        // If already refreshing, queue this request
         return new Promise((resolve, reject) => {
           failedQueue.push({
             resolve: () => {
@@ -90,21 +89,30 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        // Attempt to refresh token using httpOnly refresh token cookie
         await apiClient.post("/auth/refresh");
-
-        // Process queued requests
         processQueue(null, null);
-
-        // Retry original request
         return apiClient(originalRequest);
       } catch (refreshError) {
-        // Refresh failed, process queue with error
+        // Retry refresh once after a short delay for transient failures
+        if (!originalRequest._refreshRetried) {
+          originalRequest._refreshRetried = true;
+          try {
+            await new Promise(r => setTimeout(r, 1000));
+            await apiClient.post("/auth/refresh");
+            processQueue(null, null);
+            return apiClient(originalRequest);
+          } catch {
+            // Second attempt also failed
+          }
+        }
+
         processQueue(refreshError, null);
 
-        // Redirect to login if in browser
-        if (typeof window !== "undefined") {
-          // Clear any client-side state here if needed
+        // Only redirect to login if the refresh token is genuinely invalid (401/403)
+        // Network errors (no status) should NOT redirect — user stays on page
+        const status = (refreshError as any)?.response?.status;
+        if ((status === 401 || status === 403) && typeof window !== "undefined") {
+          localStorage.removeItem('auth-storage');
           window.location.href = "/login";
         }
 
@@ -114,7 +122,6 @@ apiClient.interceptors.response.use(
       }
     }
 
-    // Log errors in development
     if (isDev) {
       console.error("🚨 Axios Response Error:", {
         message: error.message,
@@ -129,14 +136,9 @@ apiClient.interceptors.response.use(
   }
 );
 
-/**
- * Generic API request helper
- * Returns the response data directly
- */
 export const apiRequest = async <T>(config: AxiosRequestConfig): Promise<T> => {
   const response: AxiosResponse<T> = await apiClient.request<T>(config);
   return response.data;
 };
 
-// Export default instance for backward compatibility
 export default apiClient;

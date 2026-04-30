@@ -1,6 +1,6 @@
 /**
  * Authentication Store
- * 
+ *
  * Security: Uses httpOnly cookies managed by the backend.
  * No JWT tokens are stored in frontend memory or localStorage.
  * The backend sets secure httpOnly cookies on signin/refresh.
@@ -11,21 +11,21 @@ import { persist, createJSONStorage, devtools } from "zustand/middleware";
 import { authService } from "@/services/authService";
 import { toast } from "react-toastify";
 import { UserDto } from "@raven/types";
+import apiClient from "@/lib/axios-client";
 
 export interface AuthState {
-  // User data only - no tokens in frontend
   user: UserDto | null;
   loading: boolean;
-  hasCheckedAuth: boolean; // Track if we've already checked auth on startup
   isAuthenticated: boolean;
+  checkAuthAttempts: number;
 
-  // Actions
   signUp: (username: string, password: string, email: string) => Promise<boolean>;
   signIn: (email: string, password: string) => Promise<boolean>;
   signOut: () => Promise<void>;
   getProfile: () => Promise<void>;
   checkAuth: () => Promise<void>;
   clearState: () => void;
+  startSessionMonitor: () => () => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -34,11 +34,11 @@ export const useAuthStore = create<AuthState>()(
       (set, get) => ({
         user: null,
         loading: false,
-        hasCheckedAuth: false,
         isAuthenticated: false,
+        checkAuthAttempts: 0,
 
         clearState: () => {
-          set({ user: null, loading: false, hasCheckedAuth: true, isAuthenticated: false });
+          set({ user: null, loading: false, isAuthenticated: false, checkAuthAttempts: 0 });
         },
 
         signUp: async (username, password, email) => {
@@ -66,8 +66,8 @@ export const useAuthStore = create<AuthState>()(
               return false;
             }
 
-            // Get user profile after successful login
             await get().getProfile();
+            set({ checkAuthAttempts: 0 });
             toast.success("Welcome back! 🎉");
             return true;
           } catch (error) {
@@ -86,7 +86,6 @@ export const useAuthStore = create<AuthState>()(
             toast.success("Signed out successfully!");
           } catch (error) {
             console.error(error);
-            // Clear state anyway on signout
             get().clearState();
             toast.error("Error during sign out.");
           }
@@ -96,51 +95,93 @@ export const useAuthStore = create<AuthState>()(
           try {
             set({ loading: true });
             const response = await authService.getProfile();
-            set({ user: response.data, hasCheckedAuth: true, isAuthenticated: true });
+            set({ user: response.data, isAuthenticated: true, loading: false, checkAuthAttempts: 0 });
           } catch (error) {
             console.error(error);
-            set({ user: null, hasCheckedAuth: true, isAuthenticated: false });
-          } finally {
-            set({ loading: false });
+            set({ user: null, isAuthenticated: false, loading: false });
           }
         },
 
-        /**
-         * Check if user is authenticated
-         * Called on app startup to restore session from httpOnly cookie
-         * Only runs once per app session
-         */
         checkAuth: async () => {
           const state = get();
 
-          // Prevent multiple calls - strict check
           if (state.loading) {
-            console.log("[Auth] Skipping checkAuth - already loading");
             return;
           }
 
-          if (state.hasCheckedAuth) {
-            console.log("[Auth] Skipping checkAuth - already checked");
+          if (state.isAuthenticated) {
             return;
           }
+
+          const maxAttempts = 3;
+          if (state.checkAuthAttempts >= maxAttempts) {
+            return;
+          }
+
+          set({ loading: true, checkAuthAttempts: state.checkAuthAttempts + 1 });
 
           try {
-            set({ loading: true, hasCheckedAuth: true }); // Set hasCheckedAuth immediately to prevent re-entry
-            const response = await authService.getProfile();
-            set({ user: response.data, isAuthenticated: true, loading: false });
-          } catch (error) {
-            // Not authenticated - this is normal for unauthenticated users
-            console.log("[Auth] Not authenticated");
-            set({ user: null, isAuthenticated: false, loading: false });
+            const response = await authService.checkSession();
+            set({ user: response.data, isAuthenticated: true, loading: false, checkAuthAttempts: 0 });
+          } catch {
+            // Check session failed — try refresh then profile
+            try {
+              await authService.refresh();
+              const response = await authService.getProfile();
+              set({ user: response.data, isAuthenticated: true, loading: false, checkAuthAttempts: 0 });
+            } catch {
+              // Genuinely not authenticated
+              set({ user: null, isAuthenticated: false, loading: false });
+            }
           }
+        },
+
+        startSessionMonitor: () => {
+          let lastVisibilityCheck = 0;
+
+          const intervalId = setInterval(async () => {
+            try {
+              await apiClient.get("/auth/me");
+            } catch {
+              try {
+                await apiClient.post("/auth/refresh");
+              } catch {
+                useAuthStore.getState().clearState();
+                if (typeof window !== "undefined") {
+                  window.location.href = "/login";
+                }
+              }
+            }
+          }, 4 * 60 * 1000);
+
+          const handleVisibility = () => {
+            if (document.visibilityState === "visible") {
+              const now = Date.now();
+              if (now - lastVisibilityCheck < 5000) return;
+              lastVisibilityCheck = now;
+
+              apiClient.get("/auth/me").catch(() => {
+                apiClient.post("/auth/refresh").catch(() => {
+                  useAuthStore.getState().clearState();
+                  if (typeof window !== "undefined") {
+                    window.location.href = "/login";
+                  }
+                });
+              });
+            }
+          };
+
+          document.addEventListener("visibilitychange", handleVisibility);
+
+          return () => {
+            clearInterval(intervalId);
+            document.removeEventListener("visibilitychange", handleVisibility);
+          };
         },
       }),
       {
         name: "auth-storage",
         storage: createJSONStorage(() => localStorage),
-        // Only persist user data for quick UI display
-        // loading, hasCheckedAuth, isAuthenticated are intentionally NOT persisted
-        // They start fresh on each app load
         partialize: (state) => ({
           user: state.user,
         }),
@@ -150,5 +191,4 @@ export const useAuthStore = create<AuthState>()(
   )
 );
 
-// Alias for backward compatibility
 export { useAuthStore as useAuthStoreNew };
