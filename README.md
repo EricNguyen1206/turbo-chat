@@ -11,8 +11,9 @@
 
 ## Architecture Highlights
 
-- **JWT auth**: access token (15 min) + refresh token (30 days) stored in httpOnly cookies
+- **JWT auth**: access token (1 h) + refresh token (30 days) with rotation, stored in httpOnly cookies
 - **OAuth**: Google and GitHub login via Passport.js strategies (gracefully disabled if credentials absent)
+- **Session persistence**: fingerprint-based session binding, sliding expiration, automatic cleanup
 - **Real-time messaging**: Socket.IO with room-based broadcasting for conversations
 - **Online presence**: heartbeat-based presence tracking via Redis
 - **Friend system**: request / accept / decline flow with bidirectional friendship mapping
@@ -30,6 +31,11 @@ Redis         presence tracking, room management, pub/sub, rate limiting
 Socket.IO     real-time messaging, presence, room events
 AWS S3        file uploads (presigned URLs)
 ```
+
+## Deployment
+
+- **API** — Google Cloud Run (Bangkok region, Tier 1)
+- **Web** — Vercel (connected via GitHub integration)
 
 ## Quick Start
 
@@ -77,6 +83,7 @@ POST /api/v1/auth/signin          verify credentials, set JWT cookies
 GET  /api/v1/auth/google          redirect to Google OAuth
 GET  /api/v1/auth/google/callback OAuth callback, set JWT cookies
 POST /api/v1/auth/refresh         rotate refresh token
+GET  /api/v1/auth/me              lightweight session check
 POST /api/v1/auth/signout         clear cookies, revoke session
 ```
 
