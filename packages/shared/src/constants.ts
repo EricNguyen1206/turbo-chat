@@ -1,4 +1,4 @@
-import { ConversationDto, ConversationType } from "@raven/types";
+import { ConversationDto, ConversationType } from "@turbo-chat/types";
 
 export const ApplicationFileType: string[] = [
   "docx",

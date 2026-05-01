@@ -1,4 +1,4 @@
-import { ConversationDto } from '@raven/types';
+import { ConversationDto } from '@turbo-chat/types';
 import { useConversationStore } from '@/store/useConversationStore';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Link } from 'react-router-dom';

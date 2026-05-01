@@ -9,7 +9,7 @@ import {
   FriendDto,
   FriendRequestDto,
   FriendRequestsResponse,
-} from '@raven/types';
+} from '@turbo-chat/types';
 import {
   useMutation,
   UseMutationOptions,

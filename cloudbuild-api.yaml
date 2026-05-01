@@ -6,14 +6,14 @@
 # GCP Config:
 #   Project:    nanobot-487408
 #   Region:     asia-southeast3 (Bangkok - Tier 1)
-#   Registry:   asia-southeast1-docker.pkg.dev/nanobot-487408/erion-repo
+#   Registry:   asia-southeast1-docker.pkg.dev/nanobot-487408/turbo-chat-repo
 #   Service:    api-service
 # ============================================================
 
 substitutions:
   _CLOUD_RUN_SERVICE: 'api-service'
   _CLOUD_RUN_REGION: 'asia-southeast3'
-  _IMAGE: 'asia-southeast1-docker.pkg.dev/nanobot-487408/erion-repo/api'
+  _IMAGE: 'asia-southeast1-docker.pkg.dev/nanobot-487408/turbo-chat-repo/api'
 
 steps:
   # Step 1: Build Docker image từ monorepo root

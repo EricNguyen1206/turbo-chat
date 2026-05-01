@@ -1,4 +1,4 @@
-# Erion Raven
+# Turbo Chat
 
 > Real-time chat application: Node.js, Express, Socket.IO, MongoDB, Redis, React.
 
@@ -34,8 +34,8 @@ AWS S3        file uploads (presigned URLs)
 
 ## Deployment
 
-- **API** — Google Cloud Run (Bangkok region, Tier 1)
-- **Web** — Vercel (connected via GitHub integration)
+- **API** — Google Cloud Run
+- **Web** — Vercel
 
 ## Quick Start
 
@@ -128,7 +128,7 @@ POST /api/v1/upload/presigned-url    get S3 presigned URL, client uploads direct
 ## Project Structure
 
 ```
-erion-raven/
+turbo-chat/
   apps/
     api/               Express backend
       src/

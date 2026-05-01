@@ -9,7 +9,7 @@ import {
   ApiMessageResponse,
   ApiResponse,
   UserDto,
-} from '@raven/types';
+} from '@turbo-chat/types';
 
 export const authService = {
   /**

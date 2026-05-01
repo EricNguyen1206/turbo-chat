@@ -5,8 +5,8 @@ import { Request } from "express";
 import { User, IUser } from "@/models/User";
 import { Session } from "@/models/Session";
 import { config } from "@/config/config";
-import { SignupRequestDto, SigninRequestDto } from "@raven/validators";
-import { UserDto } from "@raven/types";
+import { SignupRequestDto, SigninRequestDto } from "@turbo-chat/validators";
+import { UserDto } from "@turbo-chat/types";
 import { logger } from "@/utils/logger";
 
 export function createFingerprint(req: Request): string {

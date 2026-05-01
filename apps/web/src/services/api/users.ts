@@ -3,7 +3,7 @@
  * React Query hooks for user operations
  */
 
-import { ApiErrorResponse, ApiResponse, UserDto } from '@raven/types';
+import { ApiErrorResponse, ApiResponse, UserDto } from '@turbo-chat/types';
 import {
   useMutation,
   UseMutationOptions,

@@ -2,7 +2,7 @@ import { WebSocketService } from '../services/websocket.service';
 import { RedisService } from '../services/redis.service';
 import { MessageService } from '../services/message.service';
 import { ConversationService } from '../services/conversation.service';
-import { SocketEvent, ConversationType } from '@raven/types';
+import { SocketEvent, ConversationType } from '@turbo-chat/types';
 import { Socket } from 'socket.io';
 import { Participant } from '../models/Participant';
 
@@ -103,6 +103,7 @@ describe('Chat Flow 1-1', () => {
 
   it('should fail if authentication token is missing (Middleware check)', async () => {
     // This part is usually tested in middleware tests, but we can verify the middleware logic here
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { socketAuthMiddleware } = require('../middleware/socketAuth.middleware');
     const mockNext = jest.fn();
     const mockSocket = {

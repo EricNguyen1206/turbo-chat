@@ -4,7 +4,7 @@ import { Friends } from "../models/Friends";
 import { Conversation } from "../models/Conversation";
 import { Participant } from "../models/Participant";
 import { Message } from "../models/Message";
-import { ConversationType } from "@raven/types";
+import { ConversationType } from "@turbo-chat/types";
 import { initializeDatabase, closeDatabase } from "../config/database";
 import { logger } from "../utils/logger";
 

@@ -1,5 +1,5 @@
 import { IsString, IsEnum, IsArray, IsOptional } from "class-validator";
-import { ConversationType } from "@raven/types";
+import { ConversationType } from "@turbo-chat/types";
 import { IsMongoDbId } from "./decorators";
 
 export class CreateConversationRequestDto {

@@ -1,7 +1,7 @@
 import { FriendRequest, FriendRequestStatus } from "@/models/FriendRequest";
 import { Friends } from "@/models/Friends";
 import { User, IUser } from "@/models/User";
-import { FriendDto, FriendRequestDto, FriendRequestsResponse, ConversationType } from "@raven/types";
+import { FriendDto, FriendRequestDto, FriendRequestsResponse, ConversationType } from "@turbo-chat/types";
 import { logger } from "@/utils/logger";
 import { ConversationService } from "@/services/conversation.service";
 

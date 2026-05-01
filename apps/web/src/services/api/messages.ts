@@ -1,4 +1,4 @@
-import { ApiErrorResponse, MessageDto, PaginatedApiResponse } from '@raven/types';
+import { ApiErrorResponse, MessageDto, PaginatedApiResponse } from '@turbo-chat/types';
 import { useInfiniteQuery, useQuery, UseQueryOptions, UseQueryResult } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 

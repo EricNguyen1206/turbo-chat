@@ -1,7 +1,7 @@
 import { useConversationsQuery } from "@/services/api/conversations";
 import { useConversationStore } from "@/store/useConversationStore";
 import { useSocketStore } from "@/store/useSocketStore";
-import { ConversationDto, ConversationType } from "@raven/types";
+import { ConversationDto, ConversationType } from "@turbo-chat/types";
 import { useEffect, useMemo, useState, useRef } from "react";
 
 /**

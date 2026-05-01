@@ -1,9 +1,9 @@
 {
-  "name": "@raven/eslint",
+  "name": "@turbo-chat/eslint",
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Shared ESLint configuration for Raven monorepo",
+  "description": "Shared ESLint configuration for TurboChat monorepo",
   "main": "index.js",
   "exports": {
     ".": "./index.js",

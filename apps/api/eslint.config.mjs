@@ -1,4 +1,4 @@
-import nodeConfig from '@raven/eslint/node';
+import nodeConfig from '@turbo-chat/eslint/node';
 
 export default [
   ...nodeConfig,

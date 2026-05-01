@@ -97,7 +97,7 @@ apiClient.interceptors.response.use(
         if (!originalRequest._refreshRetried) {
           originalRequest._refreshRetried = true;
           try {
-            await new Promise(r => setTimeout(r, 1000));
+            await new Promise(resolve => setTimeout(resolve, 1000));
             await apiClient.post("/auth/refresh");
             processQueue(null, null);
             return apiClient(originalRequest);

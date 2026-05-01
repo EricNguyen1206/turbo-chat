@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import { User, IUser } from "@/models/User";
-import { UpdateProfileDto } from "@raven/validators";
-import { UserDto } from "@raven/types";
+import { UpdateProfileDto } from "@turbo-chat/validators";
+import { UserDto } from "@turbo-chat/types";
 import { logger } from "@/utils/logger";
 
 export class UserService {

@@ -52,7 +52,7 @@ The design respects your existing Happy Hues Palette 11:
 
 ### Letter Spacing
 - **Labels**: `tracking-widest` for uppercase section headers
-- **Brand**: `tracking-wide` for the "Raven" wordmark
+- **Brand**: `tracking-wide` for the "Turbo-Chat" wordmark
 - **Body**: Default tracking for readability
 
 ## Spacing System

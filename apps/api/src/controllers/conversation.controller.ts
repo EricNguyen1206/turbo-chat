@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import { ConversationService } from '@/services/conversation.service';
 import { logger } from '@/utils/logger';
 import { AuthenticatedRequest } from '@/middleware/auth.middleware';
-import { ApiResponse, ConversationDetailDto, ConversationType, ConversationListDto } from '@raven/types';
+import { ApiResponse, ConversationDetailDto, ConversationType, ConversationListDto } from '@turbo-chat/types';
 
 export class ConversationController {
   private conversationService: ConversationService;

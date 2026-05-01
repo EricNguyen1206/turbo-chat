@@ -50,7 +50,7 @@ function MessagesWebSocketProvider() {
       connect(userIdString)
         .then(() => {
           // Fetch initial friends online status after connection
-          fetchFriendsOnlineStatus();
+          return fetchFriendsOnlineStatus();
         })
         .catch(() => {
           // Reset the flag on error so we can try again if needed

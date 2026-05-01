@@ -27,9 +27,9 @@ jobs:
 
       - name: Build shared packages
         run: |
-          pnpm --filter @raven/types build
-          pnpm --filter @raven/validators build
-          pnpm --filter @raven/shared build
+          pnpm --filter @turbo-chat/types build
+          pnpm --filter @turbo-chat/validators build
+          pnpm --filter @turbo-chat/shared build
 
       - name: Test frontend
         run: pnpm --dir apps/web exec vitest run
@@ -53,9 +53,9 @@ jobs:
 
       - name: Build shared packages
         run: |
-          pnpm --filter @raven/types build
-          pnpm --filter @raven/validators build
-          pnpm --filter @raven/shared build
+          pnpm --filter @turbo-chat/types build
+          pnpm --filter @turbo-chat/validators build
+          pnpm --filter @turbo-chat/shared build
 
       - name: Test backend
-        run: pnpm --filter @raven/api test
+        run: pnpm --filter @turbo-chat/api test

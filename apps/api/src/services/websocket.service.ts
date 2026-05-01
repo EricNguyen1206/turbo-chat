@@ -11,7 +11,7 @@ import {
   createMessageDto,
   createUserJoinedPayload,
   createUserLeftPayload,
-} from '@raven/types';
+} from '@turbo-chat/types';
 import { logger } from '@/utils/logger';
 
 /**

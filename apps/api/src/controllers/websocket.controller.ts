@@ -14,7 +14,7 @@ import {
   SendMessagePayload,
   HeartbeatPayload,
   createErrorPayload,
-} from '@raven/types';
+} from '@turbo-chat/types';
 import { AuthenticatedSocket } from '@/middleware/socketAuth.middleware';
 
 /**

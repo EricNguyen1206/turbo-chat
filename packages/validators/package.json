@@ -1,5 +1,5 @@
 {
-  "name": "@raven/validators",
+  "name": "@turbo-chat/validators",
   "version": "1.0.0",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "class-validator": "^0.14.0",
-    "@raven/types": "workspace:*"
+    "@turbo-chat/types": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.3.2",

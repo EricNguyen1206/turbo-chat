@@ -1,5 +1,5 @@
 import { Message, useChatStore } from "@/store/useChatStore";
-import { MessageDto } from "@raven/types";
+import { MessageDto } from "@turbo-chat/types";
 import { useMarkConversationAsReadMutation } from "@/services/api/conversations";
 import { useEffect } from "react";
 

@@ -4,7 +4,7 @@ import { Search, X, User } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useSearchUsersQuery } from '@/services/api/users';
-import type { UserDto } from '@raven/types';
+import type { UserDto } from '@turbo-chat/types';
 
 interface UserSearchInputProps {
   selectedUsers: UserDto[];

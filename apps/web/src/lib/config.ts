@@ -16,7 +16,7 @@ export const config = {
    * Application name
    * Displayed in the UI
    */
-  appName: import.meta.env.VITE_APP_NAME || 'Raven',
+  appName: import.meta.env.VITE_APP_NAME || 'Turbo',
 
   /**
    * Current environment

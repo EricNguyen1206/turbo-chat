@@ -1,4 +1,4 @@
-# Chat Service Backend (`@raven/api`)
+# Chat Service Backend (`@turbo-chat/api`)
 
 Real-time chat backend built with Express.js, TypeScript, Socket.IO, MongoDB (Mongoose), and Redis.
 
@@ -82,7 +82,7 @@ WS_CORS_ORIGIN=http://localhost:3000,http://localhost:3001
 4. Start backend:
 
 ```bash
-pnpm --filter @raven/api dev
+pnpm --filter @turbo-chat/api dev
 ```
 
 ## 📚 API Documentation
@@ -99,12 +99,12 @@ If you use a different `PORT`, replace `8080` accordingly.
 Run from workspace root:
 
 ```bash
-pnpm --filter @raven/api dev
-pnpm --filter @raven/api build
-pnpm --filter @raven/api start
-pnpm --filter @raven/api test
-pnpm --filter @raven/api lint
-pnpm --filter @raven/api typecheck
+pnpm --filter @turbo-chat/api dev
+pnpm --filter @turbo-chat/api build
+pnpm --filter @turbo-chat/api start
+pnpm --filter @turbo-chat/api test
+pnpm --filter @turbo-chat/api lint
+pnpm --filter @turbo-chat/api typecheck
 ```
 
 Run from `apps/api` directly:
@@ -121,7 +121,7 @@ pnpm typecheck
 ## 🧪 Testing
 
 ```bash
-pnpm --filter @raven/api test
+pnpm --filter @turbo-chat/api test
 ```
 
 The test suite expects MongoDB and Redis to be available.

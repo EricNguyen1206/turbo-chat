@@ -10,7 +10,7 @@ import {
   ConversationListApiResponse,
   CreateConversationRequest,
   ConversationListResponseDto,
-} from '@raven/types';
+} from '@turbo-chat/types';
 import {
   useMutation,
   UseMutationOptions,

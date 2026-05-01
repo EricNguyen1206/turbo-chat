@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { validate, ValidationError as ClassValidationError } from "class-validator";
 import { plainToClass } from "class-transformer";
 import { logger } from "@/utils/logger";
-import { ValidationError } from "@raven/shared";
+import { ValidationError } from "@turbo-chat/shared";
 
 export const validateDto = (dtoClass: any) => {
   return async (req: Request, _res: Response, next: NextFunction) => {

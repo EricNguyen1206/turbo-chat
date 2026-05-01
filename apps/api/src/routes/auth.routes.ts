@@ -3,7 +3,7 @@ import passport from 'passport';
 import { AuthController } from '@/controllers/auth.controller';
 import { validateDto } from '@/middleware/validation.middleware';
 import { authenticateToken } from '@/middleware/auth.middleware';
-import { SignupRequestDto, SigninRequestDto } from '@raven/validators';
+import { SignupRequestDto, SigninRequestDto } from '@turbo-chat/validators';
 
 const router = Router();
 const authController = new AuthController();

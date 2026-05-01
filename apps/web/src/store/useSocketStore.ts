@@ -26,7 +26,7 @@ import {
   ServerToClientEvents,
   ClientToServerEvents,
   MessageDto,
-} from "@raven/types";
+} from "@turbo-chat/types";
 import { apiUrl } from "@/lib/config";
 
 // API base URL from config

@@ -36,13 +36,13 @@ export function AppSidebar() {
       <SidebarHeader className="sticky top-0 z-50 h-16 flex-row items-center gap-4 px-6 bg-sidebar/95 backdrop-blur-sm transition-all duration-300 ease-out group-data-[collapsible=icon]:px-3 group-data-[collapsible=icon]:justify-center">
         <img
           src="/logo.png"
-          alt="Raven Logo"
+          alt="Turbo chat Logo"
           width={28}
           height={28}
           className="w-7 h-7 min-w-7 min-h-7 rounded-md object-contain flex-shrink-0 transition-all duration-300 ease-out opacity-80 hover:opacity-100"
         />
         <h1 className="font-light text-base tracking-wide text-sidebar-foreground/90 whitespace-nowrap overflow-hidden transition-all duration-300 ease-out group-data-[collapsible=icon]:w-0 group-data-[collapsible=icon]:opacity-0">
-          Raven
+          Turbo
         </h1>
       </SidebarHeader>
 

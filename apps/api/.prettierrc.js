@@ -1,2 +1,2 @@
-module.exports = require('@raven/prettier');
+module.exports = require('@turbo-chat/prettier');
 

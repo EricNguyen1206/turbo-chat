@@ -10,7 +10,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage, devtools } from "zustand/middleware";
 import { authService } from "@/services/authService";
 import { toast } from "react-toastify";
-import { UserDto } from "@raven/types";
+import { UserDto } from "@turbo-chat/types";
 import apiClient from "@/lib/axios-client";
 
 export interface AuthState {

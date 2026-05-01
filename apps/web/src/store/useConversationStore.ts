@@ -1,4 +1,4 @@
-import { ConversationDto } from '@raven/types';
+import { ConversationDto } from '@turbo-chat/types';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 

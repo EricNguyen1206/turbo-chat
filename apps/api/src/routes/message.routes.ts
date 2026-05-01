@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { MessageController } from '@/controllers/message.controller';
 import { validateDto } from '@/middleware/validation.middleware';
-import { SendMessageRequestDto } from '@raven/validators';
+import { SendMessageRequestDto } from '@turbo-chat/validators';
 
 const router = Router();
 const messageController = new MessageController();

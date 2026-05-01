@@ -1,8 +1,8 @@
 {
-  "name": "@raven/tsconfig",
+  "name": "@turbo-chat/tsconfig",
   "version": "1.0.0",
   "private": true,
-  "description": "Shared TypeScript configurations for Raven monorepo",
+  "description": "Shared TypeScript configurations for TurboChat monorepo",
   "files": [
     "base.json",
     "node.json",

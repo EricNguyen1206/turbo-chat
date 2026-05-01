@@ -3,8 +3,8 @@ import { toast } from 'react-toastify';
 
 import { useCreateConversationMutation } from '@/services/api/conversations';
 import { useCurrentUserQuery } from '@/services/api/users';
-import { CreateConversationRequest, ConversationDto, ConversationType } from '@raven/types';
-import type { UserDto } from '@raven/types';
+import { CreateConversationRequest, ConversationDto, ConversationType } from '@turbo-chat/types';
+import type { UserDto } from '@turbo-chat/types';
 import { useConversationStore } from '@/store/useConversationStore';
 
 interface UseCreateConversationOptions {

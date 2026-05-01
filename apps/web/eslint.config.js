@@ -1,4 +1,4 @@
-import reactConfig from "@raven/eslint/react";
+import reactConfig from "@turbo-chat/eslint/react";
 
 export default [
   ...reactConfig,

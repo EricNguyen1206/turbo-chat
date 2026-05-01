@@ -2,9 +2,9 @@ import { Conversation, IConversation } from "@/models/Conversation";
 import { User, IUser } from "@/models/User";
 import { Participant, IParticipant } from "@/models/Participant";
 import { UserService } from "@/services/user.service";
-import { ConversationDetailDto, ConversationDto, ConversationType, UserDto } from "@raven/types";
+import { ConversationDetailDto, ConversationDto, ConversationType, UserDto } from "@turbo-chat/types";
 import { logger } from "@/utils/logger";
-import { UpdateConversationRequestDto } from "@raven/validators";
+import { UpdateConversationRequestDto } from "@turbo-chat/validators";
 
 export class ConversationService {
   private userService: UserService;

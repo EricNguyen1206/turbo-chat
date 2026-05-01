@@ -1,6 +1,6 @@
 import { Message } from "@/models/Message";
 import { IUser } from "@/models/User";
-import { MessageDto } from "@raven/types";
+import { MessageDto } from "@turbo-chat/types";
 import { logger } from "@/utils/logger";
 
 export class MessageService {

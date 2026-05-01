@@ -1,7 +1,7 @@
 import { RedisService } from './redis.service';
 import { FriendService } from './friend.service';
 import { WebSocketService } from './websocket.service';
-import { SocketEvent, FriendStatusChangedPayload } from '@raven/types';
+import { SocketEvent, FriendStatusChangedPayload } from '@turbo-chat/types';
 import { logger } from '@/utils/logger';
 
 /**

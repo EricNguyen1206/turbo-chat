@@ -32,7 +32,7 @@ export class MCPService {
       });
 
       const client = new Client(
-        { name: "raven-api-client", version: "1.0.0" },
+        { name: "turbo-chat-api-client", version: "1.0.0" },
         { capabilities: {} }
       );
 

@@ -10,7 +10,7 @@ import {
 import CreateNewConversationDialog from '../organisms/CreateNewConversationDialog';
 import ConversationsSkeleton from './ConversationsSkeleton';
 import GroupMessageCard from '../atoms/GroupMessageCard';
-import { ConversationDto } from '@raven/types';
+import { ConversationDto } from '@turbo-chat/types';
 import { ConversationState, useConversationStore } from '@/store/useConversationStore';
 
 type SidebarGroupMessagesProps = {

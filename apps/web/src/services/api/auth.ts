@@ -8,7 +8,7 @@ import {
   ApiErrorResponse,
   ApiMessageResponse,
   ApiResponse,
-} from '@raven/types';
+} from '@turbo-chat/types';
 import { useMutation, UseMutationOptions } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 

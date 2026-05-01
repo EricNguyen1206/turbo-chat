@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { UserController } from '@/controllers/user.controller';
 import { validateDto } from '@/middleware/validation.middleware';
-import { UpdateProfileDto } from '@raven/validators';
+import { UpdateProfileDto } from '@turbo-chat/validators';
 
 const router = Router();
 const userController = new UserController();

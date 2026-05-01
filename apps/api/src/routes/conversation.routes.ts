@@ -5,7 +5,7 @@ import {
   CreateConversationRequestDto,
   UpdateConversationRequestDto,
   ConversationMembershipRequest,
-} from '@raven/validators';
+} from '@turbo-chat/validators';
 
 const router = Router();
 const conversationController = new ConversationController();

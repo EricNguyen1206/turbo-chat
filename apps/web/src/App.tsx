@@ -37,7 +37,7 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="system" storageKey="raven-theme">
+      <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
         <ToastContainer position="bottom-left" theme="colored" />
         <main className="relative !w-screen !h-screen !min-h-screen !max-h-screen overflow-hidden flex flex-col font-sans antialiased">
           <Routes>

@@ -1,6 +1,6 @@
 import { useConversationMessagesInfiniteQuery } from "@/services/api/messages";
 import { Message, useChatStore } from "@/store/useChatStore";
-import { MessageDto, PaginatedApiResponse } from "@raven/types";
+import { MessageDto, PaginatedApiResponse } from "@turbo-chat/types";
 import { useMemo } from "react";
 
 // Hook for managing chat data and messages

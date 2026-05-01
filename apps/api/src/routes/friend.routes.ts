@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { FriendController } from '@/controllers/friend.controller';
 import { validateDto } from '@/middleware/validation.middleware';
-import { SendFriendRequestApiRequestDto } from '@raven/validators';
+import { SendFriendRequestApiRequestDto } from '@turbo-chat/validators';
 
 const router = Router();
 const friendController = new FriendController();

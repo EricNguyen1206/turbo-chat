@@ -1,4 +1,4 @@
-import { ConversationDto } from '@raven/types';
+import { ConversationDto } from '@turbo-chat/types';
 import { useConversationStore } from '@/store/useConversationStore';
 import { Hash } from 'lucide-react';
 import { SidebarMenuButton, SidebarMenuItem } from '../ui/sidebar';

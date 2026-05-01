@@ -31,16 +31,16 @@ importers:
 
   .:
     devDependencies:
-      '@raven/eslint':
+      '@turbo-chat/eslint':
         specifier: workspace:*
         version: link:packages/config/eslint
-      '@raven/jest':
+      '@turbo-chat/jest':
         specifier: workspace:*
         version: link:packages/config/jest
-      '@raven/prettier':
+      '@turbo-chat/prettier':
         specifier: workspace:*
         version: link:packages/config/prettier
-      '@raven/tsconfig':
+      '@turbo-chat/tsconfig':
         specifier: workspace:*
         version: link:packages/config/tsconfig
       turbo:
@@ -61,13 +61,13 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: ^1.26.0
         version: 1.29.0(zod@4.3.6)
-      '@raven/shared':
+      '@turbo-chat/shared':
         specifier: workspace:*
         version: link:../../packages/shared
-      '@raven/types':
+      '@turbo-chat/types':
         specifier: workspace:*
         version: link:../../packages/types
-      '@raven/validators':
+      '@turbo-chat/validators':
         specifier: workspace:*
         version: link:../../packages/validators
       bcryptjs:
@@ -143,16 +143,16 @@ importers:
         specifier: ^11.1.0
         version: 11.1.0
     devDependencies:
-      '@raven/eslint':
+      '@turbo-chat/eslint':
         specifier: workspace:*
         version: link:../../packages/config/eslint
-      '@raven/jest':
+      '@turbo-chat/jest':
         specifier: workspace:*
         version: link:../../packages/config/jest
-      '@raven/prettier':
+      '@turbo-chat/prettier':
         specifier: workspace:*
         version: link:../../packages/config/prettier
-      '@raven/tsconfig':
+      '@turbo-chat/tsconfig':
         specifier: workspace:*
         version: link:../../packages/config/tsconfig
       '@types/bcryptjs':
@@ -266,15 +266,6 @@ importers:
       '@radix-ui/react-tooltip':
         specifier: ^1.2.8
         version: 1.2.8(@types/react-dom@19.2.3)(@types/react@19.2.14)(react-dom@19.2.4)(react@19.2.4)
-      '@raven/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
-      '@raven/types':
-        specifier: workspace:*
-        version: link:../../packages/types
-      '@raven/validators':
-        specifier: workspace:*
-        version: link:../../packages/validators
       '@react-oauth/google':
         specifier: ^0.13.4
         version: 0.13.4(react-dom@19.2.4)(react@19.2.4)
@@ -284,6 +275,15 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.85.5
         version: 5.96.2(react@19.2.4)
+      '@turbo-chat/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@turbo-chat/types':
+        specifier: workspace:*
+        version: link:../../packages/types
+      '@turbo-chat/validators':
+        specifier: workspace:*
+        version: link:../../packages/validators
       axios:
         specifier: '>=1.13.5'
         version: 1.14.0
@@ -324,15 +324,6 @@ importers:
         specifier: ^5.0.7
         version: 5.0.12(@types/react@19.2.14)(react@19.2.4)
     devDependencies:
-      '@raven/eslint':
-        specifier: workspace:*
-        version: link:../../packages/config/eslint
-      '@raven/prettier':
-        specifier: workspace:*
-        version: link:../../packages/config/prettier
-      '@raven/tsconfig':
-        specifier: workspace:*
-        version: link:../../packages/config/tsconfig
       '@tailwindcss/postcss':
         specifier: ^4.1.18
         version: 4.2.2
@@ -345,6 +336,15 @@ importers:
       '@testing-library/react':
         specifier: ^16.3.1
         version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@19.2.3)(@types/react@19.2.14)(react-dom@19.2.4)(react@19.2.4)
+      '@turbo-chat/eslint':
+        specifier: workspace:*
+        version: link:../../packages/config/eslint
+      '@turbo-chat/prettier':
+        specifier: workspace:*
+        version: link:../../packages/config/prettier
+      '@turbo-chat/tsconfig':
+        specifier: workspace:*
+        version: link:../../packages/config/tsconfig
       '@types/js-cookie':
         specifier: ^3.0.6
         version: 3.0.6
@@ -456,7 +456,7 @@ importers:
 
   packages/shared:
     dependencies:
-      '@raven/types':
+      '@turbo-chat/types':
         specifier: workspace:*
         version: link:../types
     devDependencies:
@@ -472,7 +472,7 @@ importers:
 
   packages/validators:
     dependencies:
-      '@raven/types':
+      '@turbo-chat/types':
         specifier: workspace:*
         version: link:../types
       class-validator:
