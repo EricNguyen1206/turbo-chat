@@ -78,6 +78,7 @@ node_modules
 .vercel
 .claude/
 .agent/
+docs/
 .gitnexus
 AGENTS.md
 CLAUDE.md

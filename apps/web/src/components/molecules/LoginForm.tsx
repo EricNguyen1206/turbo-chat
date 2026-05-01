@@ -9,7 +9,6 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Loader2 } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
-import GithubLoginButton from "../atoms/GithubLoginButton";
 
 const LoginForm = () => {
   const [hasError, setHasError] = useState(false);
@@ -55,7 +54,7 @@ const LoginForm = () => {
   };
 
   const handleGoogleLogin = () => {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1';
+    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:10000/api/v1";
     window.location.href = `${apiUrl}/auth/google`;
   };
 
@@ -90,7 +89,7 @@ const LoginForm = () => {
               id="email"
               type="email"
               placeholder="name@example.com"
-              defaultValue="admin@gmail.com"
+              defaultValue={import.meta.env.DEV ? "admin@gmail.com" : ""}
               onFocus={handleInputFocus}
               className={`h-11 rounded-lg text-sm font-light bg-background/50 transition-all duration-200 ${inputErrorClass}`}
               required
@@ -115,7 +114,7 @@ const LoginForm = () => {
               ref={passwordRef}
               id="password"
               type="password"
-              defaultValue="Admin123"
+              defaultValue={import.meta.env.DEV ? "Admin123" : ""}
               onFocus={handleInputFocus}
               className={`h-11 rounded-lg text-sm font-light bg-background/50 transition-all duration-200 ${inputErrorClass}`}
               required
@@ -161,7 +160,6 @@ const LoginForm = () => {
           >
             Continue with Google
           </Button>
-          <GithubLoginButton />
         </div>
       </CardContent>
 
