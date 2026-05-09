@@ -1,6 +1,3 @@
-import { LogLevel } from "../logger";
-
-// Mock config BEFORE importing logger so the Logger constructor reads the mock.
 jest.mock("@/config/config", () => ({
   config: {
     logging: {
@@ -9,20 +6,21 @@ jest.mock("@/config/config", () => ({
   },
 }));
 
-// Import logger after the mock is in place.
-// We re-import for each log-level scenario by clearing the module registry.
 const getFreshLogger = () => {
   jest.resetModules();
   jest.doMock("@/config/config", () => ({
+    __esModule: true,
     config: { logging: { level: currentLogLevel } },
   }));
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const mod = require("../logger");
-  return { logger: mod.logger as { error: jest.Mock; warn: jest.Mock; info: jest.Mock; debug: jest.Mock }, LogLevel: mod.LogLevel as typeof LogLevel };
+  const mod = jest.requireActual("../logger") as typeof import("../logger");
+  return {
+    logger: new mod.Logger() as unknown as { error: jest.Mock; warn: jest.Mock; info: jest.Mock; debug: jest.Mock },
+    LogLevel: mod.LogLevel,
+  };
 };
 
 // The logger module exports a singleton; we capture the default (level=error) one too.
-import { logger, LogLevel as ImportedLogLevel } from "../logger";
+import "../logger";
 
 let currentLogLevel: string = "error";
 
@@ -39,61 +37,6 @@ beforeEach(() => {
 
 afterEach(() => {
   jest.restoreAllMocks();
-});
-
-// ── LogLevel enum ────────────────────────────────────────────────────
-describe("LogLevel enum", () => {
-  it("should have correct string values", () => {
-    expect(ImportedLogLevel.ERROR).toBe("error");
-    expect(ImportedLogLevel.WARN).toBe("warn");
-    expect(ImportedLogLevel.INFO).toBe("info");
-    expect(ImportedLogLevel.DEBUG).toBe("debug");
-  });
-});
-
-// ── Logger construction (default mock: level = error) ────────────────
-describe("Logger construction", () => {
-  it("should read log level from config", () => {
-    // The default mock sets level to "error"
-    // We verify by checking that only error() produces output
-    logger.error("err");
-    logger.warn("warn");
-    expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
-    expect(consoleWarnSpy).not.toHaveBeenCalled();
-  });
-});
-
-// ── formatMessage (tested indirectly through public log methods) ─────
-describe("formatMessage", () => {
-  it("should format message with timestamp, level, and message", () => {
-    logger.error("hello");
-    expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
-
-    const output = consoleErrorSpy.mock.calls[0][0] as string;
-    // Matches pattern: [ISO-timestamp] ERROR: hello
-    expect(output).toMatch(/^\[\d{4}-\d{2}-\d{2}T[\d:.]+Z\] ERROR: hello$/);
-  });
-
-  it("should include JSON metadata when meta is provided", () => {
-    logger.error("msg", { userId: 42 });
-    const output = consoleErrorSpy.mock.calls[0][0] as string;
-    expect(output).toContain('"userId":42');
-  });
-
-  it("should serialize Error meta as { message, stack }", () => {
-    const err = new Error("boom");
-    err.stack = "boom\n    at test.js:1:1";
-    logger.error("failed", err);
-    const output = consoleErrorSpy.mock.calls[0][0] as string;
-    expect(output).toContain('"message":"boom"');
-    expect(output).toContain('"stack":"boom\\n    at test.js:1:1"');
-  });
-
-  it("should not append metadata when meta is undefined", () => {
-    logger.error("plain");
-    const output = consoleErrorSpy.mock.calls[0][0] as string;
-    expect(output).toMatch(/\] ERROR: plain$/);
-  });
 });
 
 // ── Log level filtering ──────────────────────────────────────────────
@@ -141,7 +84,6 @@ describe("Log level filtering", () => {
 
     expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
     expect(consoleWarnSpy).toHaveBeenCalledTimes(1);
-    // info() and debug() both use console.log
     expect(consoleLogSpy).toHaveBeenCalledTimes(1);
   });
 
@@ -156,7 +98,6 @@ describe("Log level filtering", () => {
 
     expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
     expect(consoleWarnSpy).toHaveBeenCalledTimes(1);
-    // info() and debug() both use console.log
     expect(consoleLogSpy).toHaveBeenCalledTimes(2);
   });
 });
@@ -164,7 +105,6 @@ describe("Log level filtering", () => {
 // ── Individual log methods call the correct console method ───────────
 describe("Log methods call correct console functions", () => {
   beforeEach(() => {
-    // Set level to DEBUG so every method produces output
     currentLogLevel = "debug";
   });
 

@@ -7,7 +7,7 @@ export enum LogLevel {
   DEBUG = "debug",
 }
 
-class Logger {
+export class Logger {
   private logLevel: LogLevel;
 
   constructor() {
