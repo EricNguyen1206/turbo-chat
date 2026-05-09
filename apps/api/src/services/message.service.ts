@@ -104,7 +104,8 @@ export class MessageService {
       if (data.conversationId) {
         const participant = await Participant.findOne({
           conversationId: data.conversationId,
-          userId: data.senderId
+          userId: data.senderId,
+          deletedAt: null,
         });
         if (!participant) {
           throw new Error("Sender is not a participant in this conversation");

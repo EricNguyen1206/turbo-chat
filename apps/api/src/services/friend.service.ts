@@ -108,7 +108,7 @@ export class FriendService {
 
       // Check if request is pending
       if (friendRequest.status !== FriendRequestStatus.PENDING) {
-        throw new Error(`Friend request is already ${friendRequest.status}`);
+        throw new Error(`Friend request is already ${friendRequest.status.toLowerCase()}`);
       }
 
       // Update request status to accepted
@@ -168,7 +168,7 @@ export class FriendService {
 
       // Check if request is pending
       if (friendRequest.status !== FriendRequestStatus.PENDING) {
-        throw new Error(`Friend request is already ${friendRequest.status}`);
+        throw new Error(`Friend request is already ${friendRequest.status.toLowerCase()}`);
       }
 
       // Update request status to declined

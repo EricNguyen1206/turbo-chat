@@ -3,7 +3,7 @@ const path = require('path');
 
 module.exports = {
   ...baseConfig,
-  setupFilesAfterSetup: ['<rootDir>/src/tests/setup.ts'],
+  setupFilesAfterEnv: ['<rootDir>/src/tests/setup.ts'],
   coverageProvider: 'v8',
   moduleNameMapper: {
     ...baseConfig.moduleNameMapper,

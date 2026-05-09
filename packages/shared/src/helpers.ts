@@ -15,7 +15,8 @@ export const censorPassword = (password: string) => {
 };
 
 export const getSummaryName = (name: string) => {
-  const parts = name.split(" ");
+  const normalized = name.trim();
+  const parts = normalized.split(/\s+/);
   const isSpaceName = parts[1]; // Minh Trí => ["Minh", "Trí"]
 
   if (isSpaceName !== undefined) {
@@ -23,7 +24,7 @@ export const getSummaryName = (name: string) => {
     return lastName?.charAt(0) ?? '';
   }
 
-  return name.charAt(0); // Kyle => K
+  return normalized.charAt(0); // Kyle => K
 };
 
 export const formatDateStr = (dateStr: string) => {

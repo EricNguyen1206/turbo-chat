@@ -7,6 +7,7 @@ import { ConversationService } from "../conversation.service";
 import { Conversation } from "@/models/Conversation";
 import { Participant } from "@/models/Participant";
 import { User } from "@/models/User";
+import { UserService } from "@/services/user.service";
 import { ConversationType } from "@turbo-chat/types";
 
 // ---------------------------------------------------------------------------
@@ -240,8 +241,7 @@ describe("ConversationService", () => {
       (Conversation.find as jest.Mock).mockResolvedValue([directConv, groupConv]);
 
       // Mock UserService.getFriendsByConversationId for the direct conversation
-      const UserServiceModule = require("@/services/user.service");
-      jest.spyOn(UserServiceModule.UserService.prototype, "getFriendsByConversationId").mockResolvedValue([
+      jest.spyOn(UserService.prototype, "getFriendsByConversationId").mockResolvedValue([
         mockUserDoc({ id: "other-user", email: "other@test.com" }),
       ]);
 
