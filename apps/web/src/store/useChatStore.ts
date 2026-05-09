@@ -25,6 +25,7 @@ export interface ChatState {
   // Message management methods
   upsertMessageToConversation: (conversationId: string, message: Message) => void;
   addMessageToConversation: (conversationId: string, message: Message) => void;
+  removeMessageFromConversation: (conversationId: string, messageId: string) => void;
   clearConversationMessages: (conversationId: string) => void;
 
   reset: () => void;
@@ -72,6 +73,19 @@ export const useChatStore = create<ChatState>()(
               [conversationId]: [...(state.conversations[conversationId] || []), message],
             },
           })),
+
+        removeMessageFromConversation: (conversationId: string, messageId: string) =>
+          set((state) => {
+            const conversationMessages = state.conversations[conversationId];
+            if (!conversationMessages) return state;
+
+            return {
+              conversations: {
+                ...state.conversations,
+                [conversationId]: conversationMessages.filter((msg) => msg.id !== messageId),
+              },
+            };
+          }),
 
         clearConversationMessages: (conversationId: string) =>
           set((state) => ({

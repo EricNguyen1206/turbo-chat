@@ -3,8 +3,11 @@ const path = require('path');
 
 module.exports = {
   ...baseConfig,
+  setupFilesAfterEnv: ['<rootDir>/src/tests/setup.ts'],
+  coverageProvider: 'v8',
   moduleNameMapper: {
     ...baseConfig.moduleNameMapper,
+    '^@/(.*)$': '<rootDir>/src/$1',
     '^@turbo-chat/types$': path.resolve(__dirname, '../../packages/types/src/index.ts'),
     '^@turbo-chat/types/(.*)\\.js$': path.resolve(__dirname, '../../packages/types/src/$1.ts'),
     '^@turbo-chat/types/(.*)$': path.resolve(__dirname, '../../packages/types/src/$1'),
@@ -14,5 +17,13 @@ module.exports = {
     '^@turbo-chat/validators/(.*)\\.js$': path.resolve(__dirname, '../../packages/validators/src/$1.ts'),
     // Handle the relative imports with .js extension inside the packages
     '^\\.\\/(.*)\\.js$': './$1',
+  },
+  coverageThreshold: {
+    global: {
+      branches: 80,
+      functions: 80,
+      lines: 78,
+      statements: 78,
+    },
   },
 };

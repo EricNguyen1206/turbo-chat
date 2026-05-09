@@ -1,5 +1,7 @@
 import { Message } from "@/models/Message";
 import { IUser } from "@/models/User";
+import { Participant } from "@/models/Participant";
+import { Conversation } from "@/models/Conversation";
 import { MessageDto } from "@turbo-chat/types";
 import { logger } from "@/utils/logger";
 
@@ -99,8 +101,26 @@ export class MessageService {
     fileName?: string;
   }): Promise<MessageDto> {
     try {
+      if (data.conversationId) {
+        const participant = await Participant.findOne({
+          conversationId: data.conversationId,
+          userId: data.senderId,
+          deletedAt: null,
+        });
+        if (!participant) {
+          throw new Error("Sender is not a participant in this conversation");
+        }
+      }
+
       const message = new Message(data);
       const savedMessage = await message.save();
+
+      if (data.conversationId) {
+        await Conversation.updateOne(
+          { _id: data.conversationId },
+          { lastMessage: savedMessage._id, updatedAt: new Date() }
+        );
+      }
 
       // Reload with relations
       const messageWithRelations = await Message.findById(savedMessage._id).populate<{
@@ -130,9 +150,33 @@ export class MessageService {
     }
   }
 
-  private async deleteMessagePrivate(messageId: string): Promise<void> {
+  private async deleteMessagePrivate(messageId: string, userId: string): Promise<void> {
     try {
+      const message = await Message.findById(messageId);
+      if (!message || message.deletedAt) {
+        throw new Error("Message not found");
+      }
+
+      const senderIdStr = (message.senderId as any)?.id || message.senderId?.toString();
+      if (senderIdStr !== userId) {
+        throw new Error("You are not authorized to delete this message");
+      }
+
       await Message.updateOne({ _id: messageId }, { deletedAt: new Date() });
+
+      if (message.conversationId) {
+        const prevMessages = await Message.find({ 
+          conversationId: message.conversationId,
+          deletedAt: null 
+        }).sort({ createdAt: -1 }).limit(1);
+        
+        const lastMessageId = prevMessages[0]?._id ?? null;
+        
+        await Conversation.updateOne(
+          { _id: message.conversationId },
+          { lastMessage: lastMessageId, updatedAt: new Date() }
+        );
+      }
     } catch (error) {
       logger.error("Error deleting message:", error);
       throw error;
@@ -270,9 +314,9 @@ export class MessageService {
   }
 
   // Delete message
-  async deleteMessage(messageId: string): Promise<void> {
+  async deleteMessage(messageId: string, userId: string): Promise<void> {
     try {
-      await this.deleteMessagePrivate(messageId);
+      await this.deleteMessagePrivate(messageId, userId);
       logger.info("Message deleted successfully", { messageId });
     } catch (error) {
       logger.error("Delete message error:", error);

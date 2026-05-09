@@ -15,15 +15,16 @@ export const censorPassword = (password: string) => {
 };
 
 export const getSummaryName = (name: string) => {
-  const isSpaceName = name.split(" ")[1]; // Minh Trí => ["Minh", "Trí"]
+  const normalized = name.trim();
+  const parts = normalized.split(/\s+/);
+  const isSpaceName = parts[1]; // Minh Trí => ["Minh", "Trí"]
 
   if (isSpaceName !== undefined) {
-    const arr = name.split(" ");
-    const lastName = arr[arr.length - 1];
-    return lastName.charAt(0);
+    const lastName = parts[parts.length - 1];
+    return lastName?.charAt(0) ?? '';
   }
 
-  return name.charAt(0); // Kyle => K
+  return normalized.charAt(0); // Kyle => K
 };
 
 export const formatDateStr = (dateStr: string) => {

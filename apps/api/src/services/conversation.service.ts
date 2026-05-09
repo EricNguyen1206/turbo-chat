@@ -217,6 +217,20 @@ export class ConversationService {
         users.push(user);
       }
 
+      // Check if duplicate direct conversation already exists
+      if (conversationType === ConversationType.DIRECT && userIds.length === 2) {
+        const user1Convs = await Participant.find({ userId: userIds[0], deletedAt: null }).distinct('conversationId');
+        const user2Convs = await Participant.find({ userId: userIds[1], deletedAt: null, conversationId: { $in: user1Convs } }).distinct('conversationId');
+        
+        if (user2Convs.length > 0) {
+          const existingConv = await Conversation.findOne({ _id: { $in: user2Convs }, type: ConversationType.DIRECT, deletedAt: null });
+          if (existingConv) {
+            logger.info("Direct conversation already exists, returning existing", { conversationId: existingConv.id });
+            return existingConv;
+          }
+        }
+      }
+
       // Auto-generate name for direct messages if not provided
       let conversationName = name;
       if (
@@ -328,6 +342,19 @@ export class ConversationService {
         throw new Error("Target user not found");
       }
 
+      // Check member limit for groups
+      if (conversation.type === ConversationType.GROUP) {
+        const MAX_GROUP_MEMBERS = 50;
+        const currentCount = await Participant.countDocuments({ conversationId, deletedAt: null });
+        if (currentCount >= MAX_GROUP_MEMBERS) {
+          // Allow if the user is already a member (e.g. updating joinedAt) but block new users
+          const existingParticipant = await Participant.findOne({ conversationId, userId: targetUserId, deletedAt: null });
+          if (!existingParticipant) {
+             throw new Error("Conversation member limit reached");
+          }
+        }
+      }
+
       // Add user to conversation (upsert to handle duplicates gracefully)
       await Participant.findOneAndUpdate(
         { userId: targetUserId, conversationId },
@@ -387,6 +414,25 @@ export class ConversationService {
     const conversation = await this.findConversationDocument(conversationId);
     if (!conversation) {
       throw new Error("Conversation not found");
+    }
+
+    if (conversation.ownerId.toString() === userId) {
+      // Find another active member to transfer ownership
+      const otherMembers = await Participant.find({
+        conversationId,
+        userId: { $ne: userId },
+        deletedAt: null
+      }).sort({ joinedAt: 1 }).limit(1);
+
+      if (otherMembers.length > 0) {
+        const newOwner = otherMembers[0]?.userId;
+        if (newOwner) {
+          await Conversation.updateOne({ _id: conversationId }, { ownerId: newOwner, updatedAt: new Date() });
+        }
+      } else {
+        // No other members, delete conversation
+        await Conversation.updateOne({ _id: conversationId }, { deletedAt: new Date() });
+      }
     }
 
     // Soft delete participant

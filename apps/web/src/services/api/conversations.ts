@@ -30,7 +30,7 @@ const fetchConversations = async (): Promise<ConversationListResponseDto> => {
   return data.data;
 };
 
-const fetchConversationById = async (id: string): Promise<ConversationDetailResponseDto> => {
+export const fetchConversationById = async (id: string): Promise<ConversationDetailResponseDto> => {
   const { data } = await apiClient.get<ConversationDetailApiResponse>(`/conversations/${id}`);
   return data.data;
 };

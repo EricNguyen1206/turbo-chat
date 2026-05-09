@@ -1,6 +1,7 @@
 import { ConversationDto } from '@turbo-chat/types';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
+import { fetchConversationById } from '@/services/api/conversations';
 
 // stores/conversationStore.ts
 export interface ConversationState {
@@ -108,10 +109,12 @@ export const useConversationStore = create<ConversationState>()(
       addGroupConversation: (conversation: ConversationDto) =>
         set((state) => ({
           groupConversations: [...state.groupConversations, conversation],
+          unreadCounts: conversation.unreadCount !== undefined ? { ...state.unreadCounts, [conversation.id]: conversation.unreadCount } : state.unreadCounts,
         })),
       addDirectConversation: (conversation: ConversationDto) =>
         set((state) => ({
           directConversations: [...state.directConversations, conversation],
+          unreadCounts: conversation.unreadCount !== undefined ? { ...state.unreadCounts, [conversation.id]: conversation.unreadCount } : state.unreadCounts,
         })),
       removeConversation: (conversationId: string, type: 'group' | 'direct') =>
         set((state) => ({
@@ -158,20 +161,73 @@ export const useConversationStore = create<ConversationState>()(
         });
       },
 
-      handleNewMessage: (message) => {
+      handleNewMessage: async (message) => {
         const state = get();
         const { conversationId } = message;
 
-        // If message is in the active conversation, do not increment unread count
-        // We check currentConversation.id because that's what the navigation hook updates
-        if (conversationId !== state.currentConversation?.id) {
-          const currentCount = state.unreadCounts[conversationId] || 0;
-          set((s) => ({
-            unreadCounts: {
-              ...s.unreadCounts,
-              [conversationId]: currentCount + 1
+        const exists = state.groupConversations.some(c => c.id === conversationId) ||
+                       state.directConversations.some(c => c.id === conversationId);
+
+        if (!exists) {
+            try {
+                const conv = await fetchConversationById(conversationId);
+                const latest = get();
+                const alreadyExists =
+                    latest.groupConversations.some(c => c.id === conversationId) ||
+                    latest.directConversations.some(c => c.id === conversationId);
+
+                if (alreadyExists) {
+                    if (conversationId !== latest.currentConversation?.id) {
+                        set((s) => ({
+                            unreadCounts: {
+                                ...s.unreadCounts,
+                                [conversationId]: (s.unreadCounts[conversationId] ?? 0) + 1,
+                            },
+                        }));
+                    }
+                    return;
+                }
+
+                const activeId =
+                    latest.currentConversationId ??
+                    latest.activeConversationId ??
+                    latest.currentConversation?.id ??
+                    null;
+
+                const convDto: ConversationDto = {
+                    id: String(conv.id),
+                    name: conv.name || '',
+                    type: conv.type as any,
+                    ownerId: String(conv.ownerId),
+                    createdAt: new Date(conv.createdAt),
+                    otherUserId: conv.otherUserId ? String(conv.otherUserId) : undefined,
+                    avatar: conv.avatar,
+                    unreadCount: activeId === conversationId ? 0 : 1,
+                };
+
+                if (conv.type === 'group') {
+                    get().addGroupConversation(convDto);
+                } else {
+                    get().addDirectConversation(convDto);
+                }
+            } catch (e) {
+                console.error("Failed to auto-fetch conversation", e);
             }
-          }));
+        } else {
+            const activeId =
+                state.currentConversationId ??
+                state.activeConversationId ??
+                state.currentConversation?.id ??
+                null;
+            if (conversationId !== activeId) {
+              const currentCount = state.unreadCounts[conversationId] || 0;
+              set((s) => ({
+                unreadCounts: {
+                  ...s.unreadCounts,
+                  [conversationId]: currentCount + 1
+                }
+              }));
+            }
         }
       },
 
