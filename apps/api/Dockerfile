@@ -81,6 +81,7 @@ COPY --from=builder --chown=expressjs:nodejs /app/pnpm-workspace.yaml ./pnpm-wor
 # Copy API app
 COPY --from=builder --chown=expressjs:nodejs /app/apps/api/dist ./apps/api/dist
 COPY --from=builder --chown=expressjs:nodejs /app/apps/api/package.json ./apps/api/package.json
+COPY --from=builder --chown=expressjs:nodejs /app/apps/api/docs/swagger.json ./apps/api/docs/swagger.json
 COPY --from=builder --chown=expressjs:nodejs /app/apps/api/node_modules ./apps/api/node_modules
 
 # Copy built workspace packages
