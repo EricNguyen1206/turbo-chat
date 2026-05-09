@@ -7,6 +7,7 @@ import { ConversationService } from "../conversation.service";
 import { Conversation } from "@/models/Conversation";
 import { Participant } from "@/models/Participant";
 import { User } from "@/models/User";
+import { IUser } from "@/models/User";
 import { UserService } from "@/services/user.service";
 import { ConversationType } from "@turbo-chat/types";
 
@@ -242,7 +243,7 @@ describe("ConversationService", () => {
 
       // Mock UserService.getFriendsByConversationId for the direct conversation
       jest.spyOn(UserService.prototype, "getFriendsByConversationId").mockResolvedValue([
-        mockUserDoc({ id: "other-user", email: "other@test.com" }),
+        mockUserDoc({ id: "other-user", email: "other@test.com" }) as unknown as IUser,
       ]);
 
       const result = await service.getAllConversation("user-id");

@@ -191,6 +191,15 @@ export class MessageController {
   // Delete message
   async deleteMessage(req: Request, res: Response): Promise<void> {
     try {
+      const userId = (req as any).user?.id;
+      if (!userId) {
+        res.status(401).json({
+          success: false,
+          message: "Unauthorized",
+        });
+        return;
+      }
+
       const { id } = req.params;
       const messageId = id;
 
@@ -204,7 +213,7 @@ export class MessageController {
         return;
       }
 
-      await this.messageService.deleteMessage(messageId);
+      await this.messageService.deleteMessage(messageId, userId);
 
       res.status(200).json({
         success: true,
